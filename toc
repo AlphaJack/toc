@@ -59,7 +59,7 @@ Other options:
     -h          Print this help message and exit
     -n          Print line numbers next to headers
     -v          Print the program version and exits
- 
+
 Example comments:
 
 ​    # ################################################################ First level
@@ -67,7 +67,7 @@ Example comments:
 ​    # ################ Third level
 ​    # ######## Fourth level
 ​    # #### Fifth level
-    
+
 Example generations:
 
     toc script.sh
@@ -86,7 +86,7 @@ print_version(){
 load_options(){
  # read user-provided comment type
  while getopts 'bcilshnv' type; do
-  case "$type" in 
+  case "$type" in
    b)
     c="#"
    ;;
@@ -181,9 +181,9 @@ toc_body(){
   *)
    # print line numbers
    if [[ "$lineNumbers" = true ]]; then
-    oldtoc="$(awk -v c="$c" '($1 ~ c) && ($2 ~ /#{4,}/) && ($3 ~ /^[A-Za-z0-9]/) {gsub(/^ /, ""); print $0, FNR}' "$file")"
+    oldtoc="$(awk -v c="$c" '($1 == c) && ($2 ~ /#{4,}/) && ($3 ~ /^[A-Za-z0-9]/) {gsub(/^ /, ""); print $0, FNR}' "$file")"
    else
-    oldtoc="$(awk -v c="$c" '($1 ~ c) && ($2 ~ /#{4,}/) && ($3 ~ /^[A-Za-z0-9]/) {gsub(/^ /, ""); print $0}' "$file")"
+    oldtoc="$(awk -v c="$c" '($1 == c) && ($2 ~ /#{4,}/) && ($3 ~ /^[A-Za-z0-9]/) {gsub(/^ /, ""); print $0}' "$file")"
    fi
    newtoc="$(echo "$oldtoc" | sed \
     -e "s|^$c ################################################################|\n$c ├──|g" \
