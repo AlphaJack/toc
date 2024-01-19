@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toc"
+version = "2.0.0"
+authors = [
+  { name="AlphaJack" },
+]
+description = "Generate a table of contents from the comments of a file"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Processing",
+    "Topic :: Utilities",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3"
+]
+
+[project.scripts]
+toc = "cli:main"
+
+[project.urls]
+Homepage = "https://github.com/AlphaJack/toc"
+Issues = "https://github.com/AlphaJack/toc/issues"
+Repository = "https://github.com/AlphaJack/toc.git"
+Changelog = "https://github.com/AlphaJack/toc#changelog"

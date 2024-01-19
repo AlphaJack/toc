@@ -19,9 +19,7 @@
 
 toc - Generate a table of contents from the comments of a file
 
-© 2023 Jack Coleman - GPLv3 License
-
-This program will search for a special kind of comments in a file, and will render them as a Table of Contents.
+toc will search for a special kind of comments in a file, and will render them as a Table of Contents.
 The output can then be pasted back in the original file.
 
 See it in action:
@@ -31,10 +29,7 @@ See it in action:
 
 This tool needs the following programs to be installed:
 
-- awk
-- bash
-- perl
-- sed
+- python
 
 To run the program from your command line as `toc`, place the "toc" file inside a folder in your path, such as "/usr/bin/" for UNIX-like systems.
 

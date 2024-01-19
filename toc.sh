@@ -35,7 +35,7 @@ c=
 
 main(){
  load_options "$@"
- check_extension "$@"
+ get_extension "$@"
  generate_toc
 }
 
@@ -119,7 +119,7 @@ load_options(){
  shift $((OPTIND -1))
 }
 
-check_extension(){
+get_extension(){
  # automatically select the comment type from its extension, if not already set
  file="${!#}"
  extension="${file##*.}"
