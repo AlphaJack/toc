@@ -1,16 +1,17 @@
 <!--
 # ┌───────────────────────────────────────────────────────────────┐
-# │ CONTENTS OF README.md                                         │
+# │ Contents of README.md                                         │
 # ├───────────────────────────────────────────────────────────────┘
 # │
-# ├──┐toc
-# │  ├── REQUIREMENTS
-# │  ├──┐USAGE
-# │  │  ├── WRITING THE COMMENTS
-# │  │  └── GENERATING THE TABLE OF CONTENTS
-# │  ├── CONTRIBUTIONS
-# │  └──┐CHANGELOG
-# │     └── 1.0.0
+# ├──┐toc 19
+# │  ├── Requirements 29
+# │  ├──┐Usage 37
+# │  │  ├── Writing the comments 44
+# │  │  └── Generating the table of contents 97
+# │  ├── Contributions 113
+# │  └──┐Changelog 117
+# │     ├── 2.0.0 119
+# │     └── 1.0.0 123
 # │
 # └───────────────────────────────────────────────────────────────
 -->
@@ -25,7 +26,7 @@ The output can then be pasted back in the original file.
 See it in action:
 [![asciicast](https://asciinema.org/a/619015.svg)](https://asciinema.org/a/619015)
 
-## REQUIREMENTS
+## Requirements
 
 This tool needs the following programs to be installed:
 
@@ -33,14 +34,14 @@ This tool needs the following programs to be installed:
 
 To run the program from your command line as `toc`, place the "toc" file inside a folder in your path, such as "/usr/bin/" for UNIX-like systems.
 
-## USAGE
+## Usage
 
 The generation of a table of contents requires two actions:
 
 1. writing the comments representing the different sections of a file
 2. running the `toc` program to turn those comments into a table of contents
 
-### WRITING THE COMMENTS
+### Writing the comments
 
 To write one of these comments:
 
@@ -93,7 +94,7 @@ Example for a Markdown file:
 ...
 ```
 
-### GENERATING THE TABLE OF CONTENTS
+### Generating the table of contents
 
 Once the comments have been added to the file, it is possible to run `toc file.ext` to will generate its table of contents.
 
@@ -109,11 +110,15 @@ The current version of the program can be output with the `-v` flag.
 
 The `-h` flag will print a help message with the available flags and some examples.
 
-## CONTRIBUTIONS
+## Contributions
 
 Do you have an idea or you found an issue? Pull Requests are welcome!
 
-## CHANGELOG
+## Changelog
+
+### 2.0.0
+
+`toc` rewritten in python
 
 ### 1.0.0
 

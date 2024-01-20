@@ -1,35 +1,29 @@
 #!/usr/bin/env python
 
-
-# todo:
-# fix md case array not appearing
-# fix md case array white line betweeen inner toc
-# https://stackoverflow.com/questions/20021693/how-to-pass-argparse-arguments-to-a-class
-# rewrite readme
-
 # ┌───────────────────────────────────────────────────────────────┐
-# │ CONTENTS OF test.py                                           │
+# │ CONTENTS OF toc.py                                            │
 # ├───────────────────────────────────────────────────────────────┘
 # │
-# ├── LIBRARIES 34
-# ├──┐FUNCTIONS 45
-# │  ├── MAIN 46
-# │  ├── HELPERS 63
-# │  ├──┐TOC GENERATION 118
-# │  │  ├── HEADER 130
-# │  │  ├──┐BODY 150
-# │  │  │  ├── MARKDOWN FILES 163
-# │  │  │  ├── OTHER FILES 181
-# │  │  │  └── PRETTIFY OUTPUT 197
-# │  │  └── FOOTER 238
-# │  └──┐TOC OUTPUT 255
-# │     ├──┐INPLACE 256
-# │     │  ├── ADD 288
-# │     │  └── UPDATE 312
-# │     └── STDOUT 326
-# ├── ENTRYPOINT 334
+# ├── LIBRARIES                                                36 |
+# ├──┐FUNCTIONS                                                47 |
+# │  ├── MAIN 48
+# │  ├── HELPERS 65
+# │  ├──┐TOC GENERATION 120
+# │  │  ├── HEADER 132
+# │  │  ├──┐BODY 152
+# │  │  │  ├── MARKDOWN FILES 165
+# │  │  │  ├── OTHER FILES 183
+# │  │  │  └── PRETTIFY OUTPUT 199
+# │  │  └── FOOTER 240
+# │  └──┐TOC OUTPUT 257
+# │     ├──┐INPLACE 258
+# │     │  ├── ADD 290
+# │     │  └── UPDATE 314
+# │     └── STDOUT 328
+# ├── ENTRYPOINT 336
 # │
 # └───────────────────────────────────────────────────────────────
+
 
 # ################################################################ LIBRARIES
 
@@ -55,10 +49,11 @@ def main():
     extension = get_extension(file)
     c = args.character if args.character else get_character(extension)
     # update file or print to stdout
-    if args.u:
+    if updateToc:
         inplace_toc(file, extension, c, lineNumbers)
     else:
         stdout_toc(file, extension, c, lineNumbers)
+
 
 # ################################ HELPERS
 
@@ -81,15 +76,15 @@ example comments:
         formatter_class=RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group()
     group.set_defaults(character=None)
-    group.add_argument("-b", action="store_const", dest="character", const="#",  help="set #  as the comment character")
+    group.add_argument("-b", action="store_const", dest="character", const="#", help="set #  as the comment character")
     group.add_argument("-c", action="store_const", dest="character", const="//", help="set // as the comment character")
-    group.add_argument("-i", action="store_const", dest="character", const=";",  help="set ;  as the comment character")
-    group.add_argument("-l", action="store_const", dest="character", const="%",  help="set %%  as the comment character")
+    group.add_argument("-i", action="store_const", dest="character", const=";", help="set ;  as the comment character")
+    group.add_argument("-l", action="store_const", dest="character", const="%", help="set %%  as the comment character")
     group.add_argument("-s", action="store_const", dest="character", const="--", help="set -- as the comment character")
     parser.add_argument("-n", action="store_true", help="print line numbers in toc")
     parser.add_argument("-u", action="store_true", help="update or add toc in file")
     parser.add_argument("-v", action='version', version='%(prog)s {__version__}', help="Show version and exit")
-    parser.add_argument("filename",  help="file to analyze")
+    parser.add_argument("filename", help="file to analyze")
     args = parser.parse_args()
     return args
 
@@ -103,19 +98,21 @@ def get_extension(file):
 def get_character(extension):
     # automatically select the comment type from its extension, if not already set
     match extension:
-        case ["c", "cc", "cpp", "d", "go", "js", "rs", "swift", "ts", "typ"]:
+        case "c" | "cc" | "cpp" | "d" | "go" | "js" | "rs" | "swift" | "ts" | "typ":
             c = "//"
         case "ini":
             c = ";"
-        case ["bib", "cls", "mat", "sty", "tex"]:
+        case "bib" | "cls" | "mat" | "sty" | "tex":
             c = "%"
-        case ["hs", "sql"]:
+        case "hs" | "sql":
             c = "--"
         case _:
             c = "#"
     return c
 
+
 # ################################ TOC GENERATION
+
 
 def generate_toc(file, extension, c, lineNumbers):
     # run text processors and store outputs
@@ -127,27 +124,31 @@ def generate_toc(file, extension, c, lineNumbers):
     outerToc = innerToc if tocPrefix == "" else tocPrefix + "\n" + innerToc + "\n" + tocSuffix
     return innerToc, outerToc
 
+
 # ################ HEADER
+
 
 def toc_header(file, extension, c):
     # begin the toc with the title of the file and print a multiline comment delimiter if needed
     match extension:
         case "css":
-            tocPrefix = "/*\n"
-        case ["html", "md"]:
-            tocPrefix = "<!--\n"
+            tocPrefix = "/*"
+        case "html" | "md":
+            tocPrefix = "<!--"
         case _:
             tocPrefix = ""
     # truncates file name to fit in a 64-characters-long box
     filename = file.split("/")[-1]
     file = (filename[:46] + "...") if len(filename) > 46 else filename
     tocHeader  = f"{c} ┌───────────────────────────────────────────────────────────────┐\n"
-    tocHeader += f"{c} │ CONTENTS OF {file}{' ' * (50 - len(file))}│\n"
+    tocHeader += f"{c} │ Contents of {file}{' ' * (50 - len(file))}│\n"
     tocHeader += f"{c} ├───────────────────────────────────────────────────────────────┘\n"
     tocHeader += f"{c} │"
     return tocPrefix, tocHeader
 
+
 # ################ BODY
+
 
 def toc_body(file, extension, c, lineNumbers):
     # reads file content and processes it accordingly
@@ -160,7 +161,9 @@ def toc_body(file, extension, c, lineNumbers):
         tocBody = prettify_joints(newtoc)
         return tocBody
 
+
 # ######## MARKDOWN FILES
+
 
 def process_markdown(c, lines, lineNumbers):
     # parses markdown files, for which we reuse the headings
@@ -169,7 +172,7 @@ def process_markdown(c, lines, lineNumbers):
         oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.match(r'^#+ [^#│├└┌]', line)]
     else:
         oldtoc = [line for line in lines if re.match(r'^#+ [^#│├└┌]', line)]
-    newtoc = [re.sub(r"^#{6}", "\t│              └──", line.strip()) for line in oldtoc]                        
+    newtoc = [re.sub(r"^#{6}", "\t│              └──", line.strip()) for line in oldtoc]
     newtoc = [re.sub(r"^#{5}", "\t│           └──", line) for line in newtoc]
     newtoc = [re.sub(r"^#{4}", "\t│        └──", line) for line in newtoc]
     newtoc = [re.sub(r"^#{3}", "\t│     └──", line) for line in newtoc]
@@ -178,7 +181,9 @@ def process_markdown(c, lines, lineNumbers):
     newtoc = [line.replace("\t", f"\n{c} ") for line in newtoc]
     return newtoc
 
+
 # ######## OTHER FILES
+
 
 def process_other(c, lines, lineNumbers):
     # parse all kind of files, for which we need our comment convention
@@ -194,7 +199,9 @@ def process_other(c, lines, lineNumbers):
     newtoc = [re.sub(r"^" + re.escape(c) + " ####", "\n" + c + " │           └──", line) for line in newtoc]
     return newtoc
 
+
 # ######## PRETTIFY OUTPUT
+
 
 def prettify_joints(newtoc):
     # improves toc appearance adding ┐ and │ where needed
@@ -206,19 +213,19 @@ def prettify_joints(newtoc):
     # iterate over the lines
     for index, line in enumerate(lines):
         # if the line contains either '└' or '├'
-        if re.search('[└├]', line):
+        if re.search("[└├]", line):
             # find the position of the match
-            i = re.search('[└├]', line).start()
+            i = re.search("[└├]", line).start()
             # if the flag at position i is set, replace the character at position i with '├'
             if flags[i] == 1:
-                line = line[:i] + '├' + line[i+1:]
+                line = line[:i] + "├" + line[i + 1:]
             # set the flag at position i
             flags[i] = 1
             # Find the position of the nested children
             j = i + 3
             # if the flag at position j is set, replace the character at position j with '┐'
             if flags[j] == 1:
-                line = line[:j] + '┐' + line[j+1:]
+                line = line[:j] + "┐" + line[j + 1:]
             # reset the flag at position j
             flags[j] = 0
             # for all positions less than i
@@ -226,7 +233,7 @@ def prettify_joints(newtoc):
                 i -= 1
                 # if the flag at position i is set, replace the character at position i with '│'
                 if flags[i] == 1:
-                    line = line[:i] + '│' + line[i+1:]
+                    line = line[:i] + "│" + line[i + 1:]
             # update the line in the list
             lines[index] = line
     # reverse the lines and join them into a single string with newline characters
@@ -234,6 +241,7 @@ def prettify_joints(newtoc):
     # print lines that are not empty
     tocBody = '\n'.join([line for line in tocBody.split('\n') if line.strip() != ''])
     return tocBody
+
 
 # ################ FOOTER
 
@@ -244,9 +252,9 @@ def toc_footer(extension, c):
     tocFooter = tocFooter + f"{c} └───────────────────────────────────────────────────────────────"
     match extension:
         case "css":
-            tocSuffix = + "\n*/"
-        case ["html", "md"]:
-            tocSuffix = + "\n-->"
+            tocSuffix = "*/"
+        case "html" | "md":
+            tocSuffix = "-->"
         case _:
             tocSuffix = ""
     return tocFooter, tocSuffix
@@ -256,16 +264,17 @@ def toc_footer(extension, c):
 # ################ INPLACE
 
 
-def inplace_toc(file, extension, c, lineNumbers, innerToc):
+def inplace_toc(file, extension, c, lineNumbers):
     if lineNumbers:
         # run twice because updating the toc may shift everything down
-        print("using line numbers")
+        # print("using line numbers")
         for i in range(2):
-            add_or_update_toc(file, extension, c, lineNumbers, innerToc)
+            add_or_update_toc(file, extension, c, lineNumbers,)
     else:
-        add_or_update_toc(file, extension, c, lineNumbers, innerToc)
+        add_or_update_toc(file, extension, c, lineNumbers)
 
-def add_or_update_toc(file, extension, c, lineNumbers, innerToc):
+
+def add_or_update_toc(file, extension, c, lineNumbers):
     # now we can generate the toc, since it's run twice when line numbers are used
     innerToc, outerToc = generate_toc(file, extension, c, lineNumbers)
     with open(file) as f:
@@ -274,23 +283,25 @@ def add_or_update_toc(file, extension, c, lineNumbers, innerToc):
         end   = f"{c} └───────────────────────────────────────────────────────────────"
         # https://stackoverflow.com/a/52921874/13448666
         if re.search(r'^%s$' % begin, data, re.M):
-            print("updating existing toc")
+            # print("updating existing toc")
             update_toc(file, extension, c, lineNumbers, innerToc, begin, end)
         else:
-            print("adding new toc")
+            # print("adding new toc")
             add_toc(file, extension, c, lineNumbers, outerToc)
+
 
 def write_newtoc(file, data):
     # common function to write output to file
     with open(file, "w") as f:
         f.write(data)
 
+
 # ######## ADD
 
 
 def add_toc(file, extension, c, lineNumbers, outerToc):
-    data = add_toc_after_shebang(outerToc)
-    write_newtoc(data)
+    data = add_toc_after_shebang(file, outerToc)
+    write_newtoc(file, data)
 
 
 def add_toc_after_shebang(file, outerToc):
@@ -299,22 +310,23 @@ def add_toc_after_shebang(file, outerToc):
         data = f.read()
         firstLine = data.split("\n", 1)[0]
         if re.search(r'^#!/usr', firstLine):
-            print("adding toc after shebang")
+            # print("adding toc after shebang")
             firstLines = firstLine + "\n\n" + outerToc
         # else prepend as first line and put everything else after
         else:
-            print("adding toc before content")
+            # print("adding toc before content")
             firstLines = outerToc + "\n\n" + firstLine
         # print(firstLines)
         data = re.sub(firstLine, firstLines, data, flags=re.DOTALL)
         return data
+
 
 # ######## UPDATE
 
 
 def update_toc(file, extension, c, lineNumbers, innerToc, begin, end):
     data = replace_multiline_multipattern(file, innerToc, begin, end)
-    write_newtoc(data)
+    write_newtoc(file, data)
 
 
 def replace_multiline_multipattern(file, innerToc, begin, end):
@@ -322,6 +334,7 @@ def replace_multiline_multipattern(file, innerToc, begin, end):
         data = f.read()
         data = re.sub('%s(.*?)%s' % (begin, end), innerToc, data, flags=re.DOTALL)
         return data
+
 
 # ################ STDOUT
 
