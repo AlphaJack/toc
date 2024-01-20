@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # ┌───────────────────────────────────────────────────────────────┐
-# │ CONTENTS OF cli.py                                            │
+# │ Contents of cli.py                                            │
 # ├───────────────────────────────────────────────────────────────┘
 # │
 # ├── LIBRARIES
@@ -20,9 +20,11 @@
 import argparse
 # heredoc epilogue
 from argparse import RawDescriptionHelpFormatter
-# toc
-from toc import Toc
-
+# toc (installed vs dev)
+try:
+    from toc.toc import Toc
+except ImportError:
+    from toc import Toc
 
 # ################################################################ FUNCTIONS
 # ################################ ARGUMENTS

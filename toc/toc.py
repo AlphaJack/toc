@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # ┌───────────────────────────────────────────────────────────────┐
-# │ CONTENTS OF toc.py                                            │
+# │ Contents of toc.py                                            │
 # ├───────────────────────────────────────────────────────────────┘
 # │
 # ├── LIBRARIES
@@ -132,8 +132,9 @@ class Toc:
         tocPrefix, tocHeader = self.toc_header()
         tocBody = self.toc_body()
         tocFooter, tocSuffix = self.toc_footer()
+        # exclude empty body
+        innerToc = tocHeader + "\n" + tocFooter if tocBody == "" else tocHeader + "\n" + tocBody + "\n" + tocFooter
         # exclude prefix and suffix from innerToc, used for updating toc inline
-        innerToc = tocHeader + "\n" + tocBody + "\n" + tocFooter
         outerToc = innerToc if tocPrefix == "" else tocPrefix + "\n" + innerToc + "\n" + tocSuffix
         return innerToc, outerToc
 

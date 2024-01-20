@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 [project.scripts]
-toc = "cli:main"
+toc = "toc.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/AlphaJack/toc"

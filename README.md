@@ -3,18 +3,27 @@
 # │ Contents of README.md                                         │
 # ├───────────────────────────────────────────────────────────────┘
 # │
-# ├──┐toc 19
-# │  ├── Requirements 29
-# │  ├──┐Usage 37
-# │  │  ├── Writing the comments 44
-# │  │  └── Generating the table of contents 97
-# │  ├── Contributions 113
-# │  └──┐Changelog 117
-# │     ├── 2.0.0 119
-# │     └── 1.0.0 123
+# │  └── TODO
+# ├──┐toc
+# │  ├── Requirements
+# │  ├──┐Usage
+# │  │  ├── Writing the comments
+# │  │  └── Generating the table of contents
+# │  ├── Contributions
+# │  └──┐Changelog
+# │     ├── 2.0.0
+# │     └── 1.0.0
 # │
 # └───────────────────────────────────────────────────────────────
 -->
+
+## TODO
+
+Rename functions
+
+Update readme
+
+Try deploy on github and testpypi
 
 # toc
 
