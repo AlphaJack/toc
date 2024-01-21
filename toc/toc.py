@@ -109,7 +109,7 @@ class Toc:
             with open(self.file) as f:
                 _data = f.read()
                 # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
-                if re.search(r'^%s$' % self.innerTocBegin, _data, re.MULTILINE) and re.search(r'^%s$' % self.innerTocEnd, _data, re.MULTILINE):
+                if re.search(r'^%s$' % self.innerTocBegin, _data, flags=re.MULTILINE) and re.search(r'^%s$' % self.innerTocEnd, _data, flags=re.MULTILINE):
                     self._update_toc(_innerToc)
                 else:
                     self._add_toc(_outerToc)
@@ -151,7 +151,7 @@ class Toc:
                 # print("adding toc before content")
                 _firstFewLines = outerToc + "\n\n" + _firstLine
             # print(firstFewLines)
-            _data = re.sub(_firstLine, _firstFewLines, _data, re.DOTALL)
+            _data = re.sub(_firstLine, _firstFewLines, _data, flags=re.DOTALL)
             return _data
 
 # #### UPDATE
@@ -169,15 +169,17 @@ class Toc:
         with open(self.file) as f:
             _data = f.read()
             # if the new toc is already present in the file, it makes no sense to rewrite the file
-            if re.search(innerToc, _data, re.DOTALL):
+            # re.escape to treat dots and other characters literally
+            if re.search(re.escape(innerToc), _data, flags=re.MULTILINE):
                 self.err = "same"
                 _data = None
                 if not self.updated:
                     print(f"Skipping replacing same toc in file {self.file}", file=sys.stderr)
                     self.updated = True
             else:
-                # use non-greedy regex to only match first occurrence, in case there are two valid self.innerTocEnd
-                _data = re.sub('%s(.*?)%s' % (self.innerTocBegin, self.innerTocEnd), innerToc, _data, flags=re.DOTALL)
+                # use non-greedy regex to only replace the smalles portion of text between innerTocBegin and innerTocEnd
+                # use count to only replace the first valid region in file
+                _data = re.sub('%s(.*?)%s' % (self.innerTocBegin, self.innerTocEnd), innerToc, _data, count=1, flags=re.DOTALL)
             return _data
 
 # ################ TOC GENERATION

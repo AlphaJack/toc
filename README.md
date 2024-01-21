@@ -59,7 +59,6 @@ You open your file and add these comments where you need them:
 ```js
 #!/usr/bin/env node
 
-
 // ################################################################ Main section
 
 let Section1 = "Write //, 64 hash characters and the name of section"
@@ -85,20 +84,16 @@ let Section5 = "Write //, 4 hash characters and the name of section"
 
 If you run `toc example.js`, the program will output the following (stdout):
 
-```
+```js
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of README.md                                         │
+// │ Contents of example.js                                        │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├──┐toc
-// │  ├── What is it?
-// │  ├── Why should I use it?
-// │  ├── How does it work?
-// │  ├── Are there exceptions?
-// │  ├── How can I contribute?
-// │  └──┐What changed from previous versions?
-// │     ├── 2.0.0
-// │     └── 1.0.0
+// ├──┐Main section
+// │  └──┐Nested section
+// │     └──┐Nested section
+// │        └──┐Nested section
+// │           └── Nested section
 // │
 // └───────────────────────────────────────────────────────────────
 ```
@@ -112,24 +107,20 @@ Adding toc to file example.js
 By opening "example.js", the file content will be:
 
 <details>
- <summary>example.js</summary>
+ <summary>example.js with toc</summary>
 
 ```js
 #!/usr/bin/env node
 
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of README.md                                         │
+// │ Contents of example.js                                        │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├──┐toc
-// │  ├── What is it?
-// │  ├── Why should I use it?
-// │  ├── How does it work?
-// │  ├── Are there exceptions?
-// │  ├── How can I contribute?
-// │  └──┐What changed from previous versions?
-// │     ├── 2.0.0
-// │     └── 1.0.0
+// ├──┐Main section
+// │  └──┐Nested section
+// │     └──┐Nested section
+// │        └──┐Nested section
+// │           └── Nested section
 // │
 // └───────────────────────────────────────────────────────────────
 
@@ -166,27 +157,26 @@ Updating toc in file example.js
 ```
 
 <details>
- <summary>Modified example.js</summary>
+ <summary>Modified example.js with toc</summary>
 
 ```js
 #!/usr/bin/env node
 
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of README.md                                         │
+// │ Contents of example.js                                        │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├──┐toc
-// │  ├── What is it?
-// │  ├── Why should I use it?
-// │  ├── How does it work?
-// │  ├── Are there exceptions?
-// │  ├── How can I contribute?
-// │  └──┐What changed from previous versions?
-// │     ├── 2.0.0
-// │     └── 1.0.0
+// ├──┐Main section
+// │  ├──┐New section
+// │  │  └── Also New section
+// │  ├──┐New section
+// │  │  └── Also New section
+// │  └──┐Nested section
+// │     └──┐Nested section
+// │        └──┐Nested section
+// │           └── Nested section
 // │
 // └───────────────────────────────────────────────────────────────
-
 
 // ################################################################ Main section
 
@@ -223,7 +213,6 @@ let Section_1_2_4 = "Write //, 8 hash characters and the name of section"
 // #### Nested section
 
 let Section_1_2_5 = "Write //, 4 hash characters and the name of section"
-
 ```
 
 </details>
@@ -236,18 +225,18 @@ For very long files, it may come in handy to run `toc -n example.js` to see the 
 
 ```
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of README.md                                         │
+// │ Contents of example.js                                        │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├──┐toc
-// │  ├── What is it?
-// │  ├── Why should I use it?
-// │  ├── How does it work?
-// │  ├── Are there exceptions?
-// │  ├── How can I contribute?
-// │  └──┐What changed from previous versions?
-// │     ├── 2.0.0
-// │     └── 1.0.0
+// ├──┐Main section 19
+// │  ├──┐New section 23
+// │  │  └── Also New section 27
+// │  ├──┐New section 31
+// │  │  └── Also New section 35
+// │  └──┐Nested section 39
+// │     └──┐Nested section 43
+// │        └──┐Nested section 47
+// │           └── Nested section 51
 // │
 // └───────────────────────────────────────────────────────────────
 ```
@@ -355,5 +344,5 @@ If you have a suggestion or you found an issue, you can use GitHub issues and pu
 
 ---
 
-[1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
-[2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damages
+[^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
+[^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damages
