@@ -52,16 +52,28 @@ Few reasons that you may consider:
 
 ## How does it work?
 
-First, you have to write the comments representing the different sections of a file. Second, you run `toc` on that file to turn those comments into a table of contents.
+First, you have to write the comments representing the different sections of a file.
+Second, you run `toc` on that file to turn those comments into a table of contents.
+
+Comments are structured in this way:
+
+```bash
+┌ comment character ("#", "//", "%", ";", "--")
+│
+│                   nesting level (64, 32, 16, 8, 4)              section name
+│ ┌──────────────────────────────┴───────────────────────────────┐ ┌────┴────┐
+# ################################################################ First level
+# ################################ Second level
+# ################ Third level
+# ######## Fourth level
+# #### Fifth level
+```
 
 ### Read the table of contents
 
 Let's say you want to structure your javascript file "example.js".
 Single line comments in this language start with "//".
 You open your file and add these comments where you need them:
-
-<details>
- <summary>Original example.js</summary>
 
 ```js
 #!/usr/bin/env node
@@ -86,8 +98,6 @@ let Section4 = "Write //, 8 hash characters and the name of section"
 
 let Section5 = "Write //, 4 hash characters and the name of section"
 ```
-
-</details>
 
 If you run `toc example.js`, the program will output the following (stdout):
 
@@ -116,7 +126,7 @@ Adding toc to file example.js
 By opening "example.js", the file content will be:
 
 <details>
- <summary>example.js with toc</summary>
+ <summary>Original example.js with toc</summary>
 
 ```js
 #!/usr/bin/env node
