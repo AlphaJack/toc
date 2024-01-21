@@ -6,8 +6,13 @@
 // ├──┐toc
 // │  ├── What is it?
 // │  ├── Why should I use it?
-// │  ├── How does it work?
-// │  ├── Are there exceptions?
+// │  ├──┐How does it work?
+// │  │  ├── Read the table of contents
+// │  │  ├── Embed the table of contents in the original file
+// │  │  ├── Use a custom comment character
+// │  │  ├── Show line numbers
+// │  │  ├── Batch processing
+// │  │  └── Exceptional file types
 // │  ├── How can I contribute?
 // │  └──┐What changed from previous versions?
 // │     ├── 2.0.0
@@ -49,12 +54,14 @@ Few reasons that you may consider:
 
 First, you have to write the comments representing the different sections of a file. Second, you run `toc` on that file to turn those comments into a table of contents.
 
+### Read the table of contents
+
 Let's say you want to structure your javascript file "example.js".
 Single line comments in this language start with "//".
 You open your file and add these comments where you need them:
 
 <details>
- <summary>example.js</summary>
+ <summary>Original example.js</summary>
 
 ```js
 #!/usr/bin/env node
@@ -97,6 +104,8 @@ If you run `toc example.js`, the program will output the following (stdout):
 // │
 // └───────────────────────────────────────────────────────────────
 ```
+
+### Embed the table of contents in the original file
 
 If you want to output the toc we just saw to the file, you should run `toc -f example.js` and get (stderr):
 
@@ -150,7 +159,7 @@ let Section5 = "Write //, 4 hash characters and the name of section"
 Notice how `toc` recognized the shebang for `node` and added the table of contents after it.
 If you run again `toc -f example.js`, it recognizes that there is no need to update the toc, as no changes have been made.
 
-However, if you add new sections to the file, it will update the file accordingly:
+However, if you add new sections to the file and run again `toc -f example.js`, it will update the file accordingly:
 
 ```
 Updating toc in file example.js
@@ -217,9 +226,13 @@ let Section_1_2_5 = "Write //, 4 hash characters and the name of section"
 
 </details>
 
+### Use a custom comment character
+
 But how could `toc` recognize that "//" is the proper comment character for that file?
 Well, thanks to AI[^1] `toc` supports most programming and markup languages, including FORTRAN and Zig.
 In case it doesn't work as expected, you can force the behavior by running `toc -c "//" example.xyz`.
+
+### Show line numbers
 
 For very long files, it may come in handy to run `toc -n example.js` to see the line number of each section, similar to the page numbers in the table of contents of a book:
 
@@ -240,6 +253,8 @@ For very long files, it may come in handy to run `toc -n example.js` to see the 
 // │
 // └───────────────────────────────────────────────────────────────
 ```
+
+### Batch processing
 
 If you feel brave enough, you can run `toc` over your entire code base, as its AI[^2] will make it:
 
@@ -263,7 +278,7 @@ Skipping replacing same toc in file ./example.js
 
 Additionally, you can run `toc -h` for usage info and `toc -v` to read the current version
 
-## Are there exceptions?
+### Exceptional file types
 
 For Markdown files, you don't need to write comments, just organize your sections with one or more "#".
 
@@ -342,7 +357,6 @@ If you have a suggestion or you found an issue, you can use GitHub issues and pu
 
 - initial release of `toc` in `bash`, `perl`, `sed` and `awk`
 
----
 
 [^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
-[^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damages
+[^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damage

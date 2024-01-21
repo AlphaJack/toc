@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "toc"
+name = "tableofcontents"
 version = "2.0.0"
 authors = [
   { name="AlphaJack" },
@@ -29,7 +29,7 @@ toc = "toc.cli:main"
 [project.urls]
 Homepage = "https://github.com/AlphaJack/toc"
 Issues = "https://github.com/AlphaJack/toc/issues"
-Repository = "https://github.com/AlphaJack/toc.git"
-Changelog = "https://github.com/AlphaJack/toc#changelog"
+Repository = "https://github.com/AlphaJack/toc"
+Changelog = "https://github.com/AlphaJack/toc"
 
 [tool.setuptools_scm]
