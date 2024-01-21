@@ -55,6 +55,7 @@ You open your file and add these comments where you need them:
 
 <details>
  <summary>example.js</summary>
+
 ```js
 #!/usr/bin/env node
 
