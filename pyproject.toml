@@ -31,3 +31,5 @@ Homepage = "https://github.com/AlphaJack/toc"
 Issues = "https://github.com/AlphaJack/toc/issues"
 Repository = "https://github.com/AlphaJack/toc.git"
 Changelog = "https://github.com/AlphaJack/toc#changelog"
+
+[tool.setuptools_scm]

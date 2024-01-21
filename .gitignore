@@ -1,2 +1,4 @@
 __pycache__/
-toc.egg-info
+*.egg-info/
+build/
+dist/

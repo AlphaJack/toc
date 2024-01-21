@@ -6,18 +6,24 @@
 # │
 # ├── LIBRARIES
 # ├──┐CLASS
-# │  ├──┐TOC OUTPUT
-# │  │  ├── STDOUT
-# │  │  └──┐INPLACE
-# │  │     ├── ADD
-# │  │     └── UPDATE
-# │  └──┐TOC GENERATION
-# │     ├── HEADER
-# │     ├──┐BODY
-# │     │  ├── MARKDOWN FILES
-# │     │  ├── OTHER FILES
-# │     │  └── PRETTIFY OUTPUT
-# │     └── FOOTER
+# │  ├──┐PUBLIC METHODS
+# │  │  ├── COMMENT CHARACTER
+# │  │  └──┐TOC OUTPUT
+# │  │     ├── STDOUT
+# │  │     └── FILE
+# │  └──┐INTERNAL METHODS
+# │     ├──┐TOC OUTPUT
+# │     │  └──┐FILE
+# │     │     ├── ADD
+# │     │     └── UPDATE
+# │     └──┐TOC GENERATION
+# │        ├── HEADER
+# │        ├──┐BODY
+# │        │  ├── BEANCOUNT FILES
+# │        │  ├── MARKDOWN FILES
+# │        │  ├── OTHER FILES
+# │        │  └── PRETTIFY CONNECTORS
+# │        └── FOOTER
 # │
 # └───────────────────────────────────────────────────────────────
 
@@ -26,6 +32,8 @@
 
 # regex
 import re
+# stderr
+import sys
 
 
 # ################################################################ CLASS
@@ -33,230 +41,326 @@ import re
 class Toc:
     def __init__(self, file: str = "", lineNumbers: bool = False, character: str = ""):
         self.file = file
-        self.extension = file.split(".")[-1]
+        self.extension = file.split(".")[-1].lower() if "." in file else ""
         self.character = character
         self.lineNumbers = lineNumbers
+        self.err = None
+        self.updated = False
+
+# ################################ PUBLIC METHODS
+
+# ################ COMMENT CHARACTER
 
     def set_character(self):
         # automatically select the comment type from its extension, if not already set
         match self.extension:
-            case "c" | "cc" | "cpp" | "d" | "go" | "js" | "rs" | "swift" | "ts" | "typ":
+            case "c" | "cc" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "html" | "java" | "js" | "kt" | "md" | "php" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
                 self.character = "//"
-            case "ini":
+            case "asm" | "beancount" | "cl" | "clj" | "cljs" | "cljc" | "edn" | "fasl" | "ini" | "lisp" | "lsp" | "rkt" | ".scm" | ".ss":
                 self.character = ";"
-            case "bib" | "cls" | "mat" | "sty" | "tex":
+            case "bib" | "cls" | "erl" | "hrl" | "mat" | "sty" | "tex":
                 self.character = "%"
-            case "hs" | "sql":
+            case "adb" | "ads" | "elm" | "hs" | "lua" | "sql":
                 self.character = "--"
+            # if you are wondering, no, i will not add support for cobol
+            # https://www.gavilan.edu/csis/languages/comments.html#_Toc53710123
+            case "bas":
+                self.character = "REM"
+            case "f" | "for" | "f90" | "f95" | "f03" | "f15":
+                self.character = "C"
+            # jl pl pm ps1 py r rb sh, and anything else
             case _:
                 self.character = "#"
         return self.character
 
-# ################################ TOC OUTPUT
-# ################ STDOUT
+# ################ TOC OUTPUT
+# ######## STDOUT
 
-    def toStdout(self):
-        _, outerToc = self.generate_toc()
-        print(outerToc)
-
-# ################ INPLACE
-
-    def toFile(self):
-        # run twice because updating the toc may shift everything down
-        if self.lineNumbers:
-            # print("using line numbers")
-            n = 2
+    def to_stdout(self):
+        _, _outerToc = self._generate_toc()
+        if _outerToc == "":
+            # skip error if we already set self.err
+            print(f'Skipping empty "{self.character}" toc for {self.file}', file=sys.stderr) if self.err is None else None
+            self.err = "empty"
         else:
-            n = 1
+            print(_outerToc)
+
+# ######## FILE
+
+    def to_file(self):
+        # run twice because updating the toc may shift everything down
+        n = 2 if self.lineNumbers else 1
         for i in range(n):
-            self.add_or_update_toc()
+            self._add_or_update()
 
-    def add_or_update_toc(self):
-        # now we can generate the toc, since it's run twice when line numbers are used
-        innerToc, outerToc = self.generate_toc()
-        self.begin = f"{self.character} ┌───────────────────────────────────────────────────────────────┐"
-        self.end   = f"{self.character} └───────────────────────────────────────────────────────────────"
+# ################################ INTERNAL METHODS
+# ################ TOC OUTPUT
+# ######## FILE
+
+    def _add_or_update(self):
+        # if the file does not contain a toc, add it, otherwise update it
+        _innerToc, _outerToc = self._generate_toc()
+        self.innerTocBegin = f"{self.character} ┌───────────────────────────────────────────────────────────────┐"
+        self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
+        if _outerToc == "":
+            print(f'Skipping empty "{self.character}" toc for {self.file}', file=sys.stderr) if self.err is None else None
+            self.err = "empty"
+        else:
+            with open(self.file) as f:
+                _data = f.read()
+                # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
+                if re.search(r'^%s$' % self.innerTocBegin, _data, re.MULTILINE) and re.search(r'^%s$' % self.innerTocEnd, _data, re.MULTILINE):
+                    self._update_toc(_innerToc)
+                else:
+                    self._add_toc(_outerToc)
+
+    def _write_toc(self, data):
+        # common function to rewrite file
+        if data:
+            try:
+                with open(self.file, "w") as f:
+                    f.write(data)
+            except PermissionError:
+                print(f"Skipping write-protected file {self.file}", file=sys.stderr)
+                self.err = "write"
+        elif not self.updated:
+            # data should never be empty if self.updated = False, but in case least we prevented cleaning the file
+            print(f"Skipping purging file {self.file}", file=sys.stderr)
+            self.updated = True
+        # elif self.updated: we skipped replacing the same toc
+
+# #### ADD
+
+    def _add_toc(self, outerToc):
+        # check for shebang and write output
+        _data = self._check_shebang(outerToc)
+        self._write_toc(_data)
+        print(f"Adding toc to file {self.file}", file=sys.stderr)
+        self.updated = True
+
+    def _check_shebang(self, outerToc):
+        # if shebang is found, append after first line
         with open(self.file) as f:
-            data = f.read()
-            # https://stackoverflow.com/a/52921874/13448666
-            if re.search(r'^%s$' % self.begin, data, re.M):
-                # print("updating existing toc")
-                self.update_toc(innerToc)
-            else:
-                # print("adding new toc")
-                self.add_toc(outerToc)
-
-    def write_newtoc(self, data):
-        # common function to write output to file
-        with open(self.file, "w") as f:
-            f.write(data)
-
-# ######## ADD
-
-    def add_toc(self, outerToc):
-        data = self.add_toc_after_shebang(outerToc)
-        self.write_newtoc(data)
-
-    def add_toc_after_shebang(self, outerToc):
-        with open(self.file) as f:
-            # if shebang is found, append after first line
-            data = f.read()
-            firstLine = data.split("\n", 1)[0]
-            if re.search(r'^#!/usr', firstLine):
+            _data = f.read()
+            _firstLine = _data.split("\n", 1)[0]
+            if re.search(r'^#!/usr', _firstLine):
                 # print("adding toc after shebang")
-                firstLines = firstLine + "\n\n" + outerToc
+                _firstFewLines = _firstLine + "\n\n" + outerToc
             # else prepend as first line and put everything else after
             else:
                 # print("adding toc before content")
-                firstLines = outerToc + "\n\n" + firstLine
-            # print(firstLines)
-            data = re.sub(firstLine, firstLines, data, flags=re.DOTALL)
-            return data
+                _firstFewLines = outerToc + "\n\n" + _firstLine
+            # print(firstFewLines)
+            _data = re.sub(_firstLine, _firstFewLines, _data, re.DOTALL)
+            return _data
 
-# ######## UPDATE
+# #### UPDATE
 
-    def update_toc(self, innerToc):
-        data = self.replace_multiline_multipattern(innerToc)
-        self.write_newtoc(data)
+    def _update_toc(self, innerToc):
+        # replace existing toc and write output
+        _data = self._replace_existing_toc(innerToc)
+        self._write_toc(_data)
+        if not self.updated:
+            print(f"Updating toc in file {self.file}", file=sys.stderr)
+            self.updated = True
 
-    def replace_multiline_multipattern(self, innerToc):
+    def _replace_existing_toc(self, innerToc):
+        # replace over multiple lines between two patterns
         with open(self.file) as f:
-            data = f.read()
-            data = re.sub('%s(.*?)%s' % (self.begin, self.end), innerToc, data, flags=re.DOTALL)
-            return data
+            _data = f.read()
+            # if the new toc is already present in the file, it makes no sense to rewrite the file
+            if re.search(innerToc, _data, re.DOTALL):
+                self.err = "same"
+                _data = None
+                if not self.updated:
+                    print(f"Skipping replacing same toc in file {self.file}", file=sys.stderr)
+                    self.updated = True
+            else:
+                # use non-greedy regex to only match first occurrence, in case there are two valid self.innerTocEnd
+                _data = re.sub('%s(.*?)%s' % (self.innerTocBegin, self.innerTocEnd), innerToc, _data, flags=re.DOTALL)
+            return _data
 
-# ################################ TOC GENERATION
+# ################ TOC GENERATION
 
-    def generate_toc(self):
+    def _generate_toc(self):
         # run text processors and store outputs
-        tocPrefix, tocHeader = self.toc_header()
-        tocBody = self.toc_body()
-        tocFooter, tocSuffix = self.toc_footer()
+        _tocPrefix, _tocHeader = self._toc_header()
+        _tocBody = self._toc_body()
+        _tocFooter, _tocSuffix = self._toc_footer()
         # exclude empty body
-        innerToc = tocHeader + "\n" + tocFooter if tocBody == "" else tocHeader + "\n" + tocBody + "\n" + tocFooter
-        # exclude prefix and suffix from innerToc, used for updating toc inline
-        outerToc = innerToc if tocPrefix == "" else tocPrefix + "\n" + innerToc + "\n" + tocSuffix
-        return innerToc, outerToc
+        if _tocBody == "":
+            _innerToc = ""
+            _outerToc = ""
+        else:
+            _innerToc = _tocHeader + "\n" + _tocBody + "\n" + _tocFooter
+            # exclude prefix and suffix from innerToc, used for updating toc inline
+            _outerToc = _innerToc if _tocPrefix == "" else _tocPrefix + "\n" + _innerToc + "\n" + _tocSuffix
+        return _innerToc, _outerToc
 
-# ################ HEADER
+# ######## HEADER
 
-    def toc_header(self):
-        # begin the toc with the title of the file and print a multiline comment delimiter if needed
+    def _toc_header(self):
+        # print a multi-line comment delimiter if needed
         match self.extension:
             case "css":
-                tocPrefix = "/*"
-            case "html" | "md":
-                tocPrefix = "<!--"
+                _tocPrefix = "/*"
+            case "html" | "md" | "xml":
+                _tocPrefix = "<!--"
             case _:
-                tocPrefix = ""
-        # truncates file name to fit in a 64-characters-long box
-        filename = self.file.split("/")[-1]
-        file = (filename[:46] + "...") if len(filename) > 46 else filename
-        tocHeader  = f"{self.character} ┌───────────────────────────────────────────────────────────────┐\n"
-        tocHeader += f"{self.character} │ Contents of {file}{' ' * (50 - len(file))}│\n"
-        tocHeader += f"{self.character} ├───────────────────────────────────────────────────────────────┘\n"
-        tocHeader += f"{self.character} │"
-        return tocPrefix, tocHeader
+                _tocPrefix = ""
+        # begin the toc with the file name, truncating it if necessary
+        _filename = self.file.split("/")[-1]
+        _filename = (_filename[:46] + "...") if len(_filename) > 46 else _filename
+        _tocHeader = f"{self.character} ┌───────────────────────────────────────────────────────────────┐\n"
+        _tocHeader += f"{self.character} │ Contents of {_filename}{' ' * (50 - len(_filename))}│\n"
+        _tocHeader += f"{self.character} ├───────────────────────────────────────────────────────────────┘\n"
+        _tocHeader += f"{self.character} │"
+        return _tocPrefix, _tocHeader
 
-# ################ BODY
+# ######## BODY
 
-    def toc_body(self):
-        # reads file content and processes it accordingly
-        with open(self.file, "r") as f:
-            lines = f.readlines()
-            if self.extension == "md":
-                newtoc = self.process_markdown(lines)
-            else:
-                newtoc = self.process_other(lines)
-            tocBody = self.prettify_joints(newtoc)
-            return tocBody
+    def _toc_body(self):
+        # read file content and process it accordingly
+        # display alert for common errors
+        try:
+            with open(self.file, "r") as f:
+                _lines = f.readlines()
+                match self.extension:
+                    case "beancount":
+                        _newtoc = self._process_beancount(_lines)
+                    case "md":
+                        _newtoc = self._process_markdown(_lines)
+                    case _:
+                        _newtoc = self._process_other(_lines)
+                _tocBody = self._prettify_connectors(_newtoc)
+        except FileNotFoundError:
+            print(f"Skipping non-existing file {self.file}", file=sys.stderr)
+            _tocBody = ""
+            self.err = "notfound"
+        except PermissionError:
+            print(f"Skipping read-protected file {self.file}", file=sys.stderr)
+            _tocBody = ""
+            self.err = "read"
+        except IsADirectoryError:
+            print(f"Skipping directory {self.file}", file=sys.stderr)
+            _tocBody = ""
+            self.err = "directory"
+        except UnicodeDecodeError:
+            print(f"Skipping binary file {self.file}", file=sys.stderr)
+            _tocBody = ""
+            self.err = "binary"
+        except BaseException:
+            print(f"Skipping file {self.file}", file=sys.stderr)
+            _tocBody = ""
+            self.err = "unknown"
+        finally:
+            return _tocBody
 
-# ######## MARKDOWN FILES
+# #### BEANCOUNT FILES
 
-    def process_markdown(self, lines):
-        # parses markdown files, for which we reuse the headings
-        oldtoc, newtoc = [], []
+    def _process_beancount(self, lines):
+        # pars beancount files, reusing sections
+        _oldtoc, _newtoc = [], []
         if self.lineNumbers:
-            oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.match(r'^#+ [^#│├└┌]', line)]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.match(r'^\*+ .*$', line)]
         else:
-            oldtoc = [line for line in lines if re.match(r'^#+ [^#│├└┌]', line)]
-        newtoc = [re.sub(r"^#{6}", "\t│              └──", line.strip()) for line in oldtoc]
-        newtoc = [re.sub(r"^#{5}", "\t│           └──", line) for line in newtoc]
-        newtoc = [re.sub(r"^#{4}", "\t│        └──", line) for line in newtoc]
-        newtoc = [re.sub(r"^#{3}", "\t│     └──", line) for line in newtoc]
-        newtoc = [re.sub(r"^#{2}", "\t│  └──", line) for line in newtoc]
-        newtoc = [re.sub(r"^#", "\t├──", line) for line in newtoc]
-        newtoc = [line.replace("\t", f"\n{self.character} ") for line in newtoc]
-        return newtoc
+            _oldtoc = [line for line in lines if re.match(r'^\*+ .*$', line)]
+        _newtoc = [re.sub(r"^\*{6}", "\t│              └──", line.strip()) for line in _oldtoc]
+        _newtoc = [re.sub(r"^\*{5}", "\t│           └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^\*{4}", "\t│        └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^\*{3}", "\t│     └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^\*{2}", "\t│  └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^\*", "\t├──", line) for line in _newtoc]
+        _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
+        return _newtoc
 
-# ######## OTHER FILES
+# #### MARKDOWN FILES
 
-    def process_other(self, lines):
-        # parse all kind of files, for which we need our comment convention
-        oldtoc, newtoc = [], []
+    def _process_markdown(self, lines):
+        # pars markdown files, reusing headings
+        _oldtoc, _newtoc = [], []
         if self.lineNumbers:
-            oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if line.startswith(self.character) and "####" in line]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.match(r'^#+ [^#│├└┌]', line)]
         else:
-            oldtoc = [line.strip() for line in lines if line.startswith(self.character) and "####" in line]
-        newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################################################", "\n" + self.character + " ├──", line) for line in oldtoc]
-        newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################", "\n" + self.character + " │  └──", line) for line in newtoc]
-        newtoc = [re.sub(r"^" + re.escape(self.character) + " ################", "\n" + self.character + " │     └──", line) for line in newtoc]
-        newtoc = [re.sub(r"^" + re.escape(self.character) + " ########", "\n" + self.character + " │        └──", line) for line in newtoc]
-        newtoc = [re.sub(r"^" + re.escape(self.character) + " ####", "\n" + self.character + " │           └──", line) for line in newtoc]
-        return newtoc
+            _oldtoc = [line for line in lines if re.match(r'^#+ [^#│├└┌]', line)]
+        _newtoc = [re.sub(r"^#{6}", "\t│              └──", line.strip()) for line in _oldtoc]
+        _newtoc = [re.sub(r"^#{5}", "\t│           └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^#{4}", "\t│        └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^#{3}", "\t│     └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^#{2}", "\t│  └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^#", "\t├──", line) for line in _newtoc]
+        _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
+        return _newtoc
 
-# ######## PRETTIFY OUTPUT
+# #### OTHER FILES
 
-    def prettify_joints(self,newtoc):
-        # improves toc appearance adding ┐ and │ where needed
-        newtoc = "".join(newtoc)
+    def _process_other(self, lines):
+        # parse all other files types, according to the comment convention
+        _oldtoc, _newtoc = [], []
+        if self.lineNumbers:
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if line.startswith(self.character) and "####" in line]
+        else:
+            _oldtoc = [line.strip() for line in lines if line.startswith(self.character) and "####" in line]
+        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################################################", "\n" + self.character + " ├──", line) for line in _oldtoc]
+        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################", "\n" + self.character + " │  └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################", "\n" + self.character + " │     └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ########", "\n" + self.character + " │        └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ####", "\n" + self.character + " │           └──", line) for line in _newtoc]
+        return _newtoc
+
+# #### PRETTIFY CONNECTORS
+
+    def _prettify_connectors(self, newtoc):
+        # improves nested appearance adding ┐ and │ where needed
+        _newtoc = "".join(newtoc)
         # split the input string into lines and reverse it
-        lines = newtoc.split('\n')[::-1]
+        _lines = _newtoc.split('\n')[::-1]
         # initialize a large list of zeros
-        flags = [0] * 1000
+        _flags = [0] * 1000
         # iterate over the lines
-        for index, line in enumerate(lines):
+        for index, line in enumerate(_lines):
             # if the line contains either '└' or '├'
             if re.search("[└├]", line):
                 # find the position of the match
                 i = re.search("[└├]", line).start()
                 # if the flag at position i is set, replace the character at position i with '├'
-                if flags[i] == 1:
+                if _flags[i] == 1:
                     line = line[:i] + "├" + line[i + 1:]
                 # set the flag at position i
-                flags[i] = 1
+                _flags[i] = 1
                 # Find the position of the nested children
                 j = i + 3
                 # if the flag at position j is set, replace the character at position j with '┐'
-                if flags[j] == 1:
+                if _flags[j] == 1:
                     line = line[:j] + "┐" + line[j + 1:]
                 # reset the flag at position j
-                flags[j] = 0
+                _flags[j] = 0
                 # for all positions less than i
                 while i > 0:
                     i -= 1
                     # if the flag at position i is set, replace the character at position i with '│'
-                    if flags[i] == 1:
+                    if _flags[i] == 1:
                         line = line[:i] + "│" + line[i + 1:]
                 # update the line in the list
-                lines[index] = line
+                _lines[index] = line
         # reverse the lines and join them into a single string with newline characters
-        tocBody = '\n'.join(lines[::-1])
+        _tocBody = '\n'.join(_lines[::-1])
         # print lines that are not empty
-        tocBody = '\n'.join([line for line in tocBody.split('\n') if line.strip() != ''])
-        return tocBody
+        _tocBody = '\n'.join([line for line in _tocBody.split('\n') if line.strip() != ''])
+        return _tocBody
 
-# ################ FOOTER
+# ######## FOOTER
 
-    def toc_footer(self):
-        # end the toc with an horizontal line, and print multiline comment delimiter if needed
-        tocFooter = f"{self.character} │\n"
-        tocFooter = tocFooter + f"{self.character} └───────────────────────────────────────────────────────────────"
+    def _toc_footer(self):
+        # end the toc with an horizontal line
+        _tocFooter = f"{self.character} │\n"
+        _tocFooter = _tocFooter + f"{self.character} └───────────────────────────────────────────────────────────────"
+        # print a multi-line comment delimiter if needed
         match self.extension:
             case "css":
-                tocSuffix = "*/"
-            case "html" | "md":
-                tocSuffix = "-->"
+                _tocSuffix = "*/"
+            case "html" | "md" | "xml":
+                _tocSuffix = "-->"
             case _:
-                tocSuffix = ""
-        return tocFooter, tocSuffix
+                _tocSuffix = ""
+        return _tocFooter, _tocSuffix

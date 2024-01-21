@@ -8,7 +8,7 @@
 # ├──┐FUNCTIONS
 # │  ├── ARGUMENTS
 # │  └── MAIN
-# ├── ENTRYPOINT
+# ├── ENTRY POINT
 # │
 # └───────────────────────────────────────────────────────────────
 
@@ -18,13 +18,17 @@
 
 # accept arguments
 import argparse
-# heredoc epilogue
+__version__ = "2.0.0"
+
+# heredoc in help epilog
 from argparse import RawDescriptionHelpFormatter
-# toc (installed vs dev)
+
+# toc (dist vs dev)
 try:
     from toc.toc import Toc
 except ImportError:
     from toc import Toc
+
 
 # ################################################################ FUNCTIONS
 # ################################ ARGUMENTS
@@ -35,28 +39,22 @@ def parse_args():
     example_usage = """
 example comments:
 
-​    # ################################################################ First level
-​    # ################################ Second level
-​    # ################ Third level
-​    # ######## Fourth level
-​    # #### Fifth level
+​  # ################################################################ First level
+​  # ################################ Second level
+​  # ################ Third level
+​  # ######## Fourth level
+​  # #### Fifth level
 """
     parser = argparse.ArgumentParser(
         prog="toc",
         description="Generate a table of contents from the comments of a file",
         epilog=example_usage,
         formatter_class=RawDescriptionHelpFormatter)
-    group = parser.add_mutually_exclusive_group()
-    group.set_defaults(character=None)
-    group.add_argument("-b", action="store_const", dest="character", const="#", help="set #  as the comment character")
-    group.add_argument("-c", action="store_const", dest="character", const="//", help="set // as the comment character")
-    group.add_argument("-i", action="store_const", dest="character", const=";", help="set ;  as the comment character")
-    group.add_argument("-l", action="store_const", dest="character", const="%", help="set %%  as the comment character")
-    group.add_argument("-s", action="store_const", dest="character", const="--", help="set -- as the comment character")
-    parser.add_argument("-n", action="store_true", help="print line numbers in toc")
-    parser.add_argument("-u", action="store_true", help="update or add toc in file")
-    parser.add_argument("-v", action='version', version='%(prog)s {__version__}', help="Show version and exit")
-    parser.add_argument("filename", help="file to analyze")
+    parser.add_argument("files", nargs="*", help="files to process")
+    parser.add_argument("-c", action="store", dest="character", type=str, help="set an arbitrary comment character (e.g. //)")
+    parser.add_argument("-f", "--to-file", action="store_true", help="add or update toc in file")
+    parser.add_argument("-n", "--line-numbers", action="store_true", help="print line numbers in toc")
+    parser.add_argument("-v", "--version", action='version', version="%(prog)s " + __version__, help="Show version and exit")
     args = parser.parse_args()
     return args
 
@@ -66,20 +64,20 @@ example comments:
 def main():
     # parse arguments
     args = parse_args()
-    file = args.filename
-    lineNumbers = args.n
-    updateToc = args.u
-    # initialize instance, set extension and comment character
-    t = Toc(file, lineNumbers)
-    t.character = args.character if args.character else t.set_character()
-    # update toc in file or print it to stdout
-    if updateToc:
-        t.toFile()
-    else:
-        t.toStdout()
+    for file in args.files:
+        # initialize instance
+        t = Toc(file)
+        # set comment character and line numbers
+        t.character = args.character if args.character else t.set_character()
+        t.lineNumbers = args.line_numbers if args.line_numbers else False
+        # choose output
+        if args.to_file:
+            t.to_file()
+        else:
+            t.to_stdout()
 
 
-# ################################################################ ENTRYPOINT
+# ################################################################ ENTRY POINT
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,7 @@
 import unittest
 from toc.toc import Toc
 
+# example test
 class TestToc(unittest.TestCase):
     def test_set_character(self):
         test_cases = [
@@ -9,6 +10,8 @@ class TestToc(unittest.TestCase):
             ("file.tex", "%"),
             ("file.sql", "--"),
             ("file.unknown", "#"),
+            ("file.", "#"),
+            ("file", "#"),
         ]
 
         for file, expected_character in test_cases:
