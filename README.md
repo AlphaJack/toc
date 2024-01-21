@@ -350,7 +350,7 @@ If you have a suggestion or you found an issue, you can use GitHub issues and pu
 ### 2.0.0
 
 - rewritten in pure `python`
-- published to PyPI as `tableofcontents`
+- published to PyPI as [`tableofcontents`](https://pypi.org/project/tableofcontents)
 - added feature to prepend the table of contents to files, preserving shebangs
 
 ### 1.0.0
