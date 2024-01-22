@@ -1,10 +1,33 @@
-name: Create release and deploy to PyPI from a new tag
+# ┌───────────────────────────────────────────────────────────────┐
+# │ Contents of from_tag_to_build_release_pypi.yml                │
+# ├───────────────────────────────────────────────────────────────┘
+# │
+# ├──┐From tag
+# │  └──┐Build and test
+# │     ├── Release to GitHub
+# │     └── Deploy to PyPI
+# │
+# └───────────────────────────────────────────────────────────────
+
+# ################################################################ From tag
+
+name: Create GitHub release and deploy to PyPI from a new tag
+
+# requirements: PyPI API token
+
+# debug: 
+#   git push --delete origin v2.1.0 && git tag --delete v2.1.0
+#   git -a && git commit --amend
+#   git push --force
+#   git tag v2.1.0 && git push --tags
 
 on:
   push:
     tags:
       - 'v*'
 jobs:
+
+# ################################ Build and test
 
   build:
     name: Test and build package
@@ -21,7 +44,7 @@ jobs:
         python-version: ["3.12"]
     steps:
       - name: Access source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@master
         # needed to list changes
         with:
           fetch-depth: 0
@@ -33,6 +56,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install build wheel setuptools
           python -m pip install -e .
       - name: Test package
         run: python -m unittest
@@ -73,16 +97,28 @@ jobs:
           name: python-dist
           path: dist
 
+# ################ Release to GitHub
+
   release:
-    name: Create a new release
+    name: Release to GitHub
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Access package
         uses: actions/download-artifact@master
         with:
           name: python-dist
           path: dist
+      - name: Rename package
+        run: |
+          cd "dist"
+          oldname="$(find -type f -name "*.whl" -print -quit)"
+          newname="${oldname/tableofcontents/toc}"
+          cd ..
+          mkdir gh
+          cp "dist/$oldname" "gh/$newname"
       # https://raw.githubusercontent.com/orhun/git-cliff/main/.github/workflows/cd.yml
       - name: Create release
         uses: softprops/action-gh-release@master
@@ -93,8 +129,10 @@ jobs:
           token: ${{ github.token }}
           fail_on_unmatched_files: true
           files: |
-            dist/*.whl
+            gh/*.whl
           #  other file
+
+# ################ Deploy to PyPI
 
   pypi:
     name: Deploy to PyPI
@@ -107,7 +145,7 @@ jobs:
           name: python-dist
           path: dist
       - name: Deploy package
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@unstable/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}

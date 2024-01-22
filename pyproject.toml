@@ -2,22 +2,20 @@
 # │ Contents of pyproject.toml                                    │
 # ├───────────────────────────────────────────────────────────────┘
 # │
-# ├── BUILD SYSTEM
-# ├── PROJECT
-# ├── TOOLS
+# ├── Build system
+# ├── Project
+# ├──┐Tools
+# │  └── Git-Cliff
 # │
 # └───────────────────────────────────────────────────────────────
 
-# ################################################################ BUILD SYSTEM
+# ################################################################ Build system
 
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.dynamic]
-readme = {file = ["README.md", "CHANGELOG.md"]}
-
-# ################################################################ PROJECT
+# ################################################################ Project
 
 [project]
 name = "tableofcontents"
@@ -26,8 +24,7 @@ authors = [
   { name="AlphaJack" },
 ]
 description = "Generate a table of contents from the comments of a file"
-#readme = "README.md"
-dynamic = ["readme"]
+readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -51,7 +48,9 @@ Issues = "https://github.com/AlphaJack/toc/issues"
 Repository = "https://github.com/AlphaJack/toc"
 Changelog = "https://github.com/AlphaJack/toc/blob/master/CHANGELOG.md"
 
-# ################################################################ TOOLS
+# ################################################################ Tools
+
+# ################################ Git-Cliff
 
 [tool.git-cliff.git]
 conventional_commits = false
@@ -81,7 +80,7 @@ commit_parsers = [
 
 [tool.git-cliff.changelog]
 trim = true
-header = """# Changelog for toc
+header = """# Changelog - toc
 
 """
 body = """
