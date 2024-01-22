@@ -6,15 +6,18 @@
 // ├──┐toc
 // │  ├── What is it?
 // │  ├── Why should I use it?
-// │  ├──┐How does it work?
+// │  ├── How does it work?
+// │  ├──┐How can I use it?
+// │  │  ├── Installation
 // │  │  ├── Read the table of contents
 // │  │  ├── Embed the table of contents in the original file
 // │  │  ├── Use a custom comment character
 // │  │  ├── Show line numbers
-// │  │  ├── Batch processing
+// │  │  ├── Process multiple files
 // │  │  └── Exceptional file types
 // │  ├── How can I contribute?
 // │  └──┐What changed from previous versions?
+// │     ├── 2.0.1
 // │     ├── 2.0.0
 // │     └── 1.0.0
 // │
@@ -33,14 +36,6 @@ toc - Generate a table of contents from the comments of a file
 
 Think it as a [`tree`](https://en.wikipedia.org/wiki/Tree_%28command%29) for the contents of a file, instead of a directory.
 
-As a Python package, you can install it by running:
-
-```bash
-pip install tableofcontents
-```
-
-If you are using Arch or Manjaro Linux, you can install [toc](https://aur.archlinux.org/packages/toc) directly from the AUR.
-
 ## Why should I use it?
 
 Few reasons that you may consider:
@@ -57,22 +52,51 @@ Second, you run `toc` on that file to turn those comments into a table of conten
 
 Comments are structured in this way:
 
-```bash
-┌ comment character ("#", "//", "%", ";", "--")
+```c
+┌ comment character ("#", "//", "%", ";", "--", etc. according to the language)
 │
-│                   nesting level (64, 32, 16, 8, 4)              section name
-│ ┌──────────────────────────────┴───────────────────────────────┐ ┌────┴────┐
-# ################################################################ First level
-# ################################ Second level
-# ################ Third level
-# ######## Fourth level
-# #### Fifth level
+│       nesting level ("#" repeated 64, 32, 16, 8 or 4 times)      section name
+│  ┌──────────────────────────────┴───────────────────────────────┐ ┌────┴────┐
+// ################################################################ First level
+// ################################ Second level
+// ################ Third level
+// ######## Fourth level
+// #### Fifth level
 ```
+
+By running `toc filename`, you will read the table of contents of that file
+
+```
+// ┌───────────────────────────────────────────────────────────────┐
+// │ Contents of test.c                                            │
+// ├───────────────────────────────────────────────────────────────┘
+// │
+// ├──┐First level
+// │  └──┐Second level
+// │     └──┐Third level
+// │        └──┐Fourth level
+// │           └── Fifth level
+// │
+// └───────────────────────────────────────────────────────────────
+```
+
+## How can I use it?
+
+### Installation
+
+First, you need [Python](https://www.python.org/downloads/) installed in your system.
+Then, you can install `toc` by running:
+
+```bash
+pip install tableofcontents
+```
+
+If you are using Arch or Manjaro Linux, you can install [toc](https://aur.archlinux.org/packages/toc) directly from the AUR.
 
 ### Read the table of contents
 
 Let's say you want to structure your javascript file "example.js".
-Single line comments in this language start with "//".
+Single line comments in this language start with `//`.
 You open your file and add these comments where you need them:
 
 ```js
@@ -126,7 +150,7 @@ Adding toc to file example.js
 By opening "example.js", the file content will be:
 
 <details>
- <summary>Original example.js with toc</summary>
+ <summary>Click to view the original `example.js` with toc</summary>
 
 ```js
 #!/usr/bin/env node
@@ -176,7 +200,7 @@ Updating toc in file example.js
 ```
 
 <details>
- <summary>Modified example.js with toc</summary>
+ <summary>Click to view the modified `example.js` with toc</summary>
 
 ```js
 #!/usr/bin/env node
@@ -238,8 +262,8 @@ let Section_1_2_5 = "Write //, 4 hash characters and the name of section"
 
 ### Use a custom comment character
 
-But how could `toc` recognize that "//" is the proper comment character for that file?
-Well, thanks to AI[^1] `toc` supports most programming and markup languages, including FORTRAN and Zig.
+But how could `toc` recognize that `//` is the proper comment character for that file?
+Well, thanks to AI[^1] `toc` supports most programming and markup languages, from COBOL to Carbon.
 In case it doesn't work as expected, you can force the behavior by running `toc -c "//" example.xyz`.
 
 ### Show line numbers
@@ -264,17 +288,19 @@ For very long files, it may come in handy to run `toc -n example.js` to see the 
 // └───────────────────────────────────────────────────────────────
 ```
 
-### Batch processing
+### Process multiple files
 
 If you feel brave enough, you can run `toc` over your entire code base, as its AI[^2] will make it:
 
-- skip directories (`.` below)
-- skip non-text files (`toc.cpython-311.pyc` below)
+- skip directories (see `.` below)
+- skip non-text files (see `toc.cpython-311.pyc` below)
 - skip non-existing files
 - skip non-readable files
 - skip non-writable files
-- skip files that don't have suitable "section" comments (`__init__.py` below)
-- skip files whose toc is already up-to-date (`toc.py` below)
+- skip files that don't have suitable "section" comments (see `__init__.py` below)
+- skip files whose toc is already up-to-date (see `toc.py` below)
+- only edit files whose toc can be added or updated safely[^3] (see `cli.py` below)
+- preserve shebangs of edited files
 
 ```
 Skipping directory .
@@ -290,14 +316,14 @@ Additionally, you can run `toc -h` for usage info and `toc -v` to read the curre
 
 ### Exceptional file types
 
-For Markdown files, you don't need to write comments, just organize your sections with one or more "#".
+For Markdown files, you don't need to write comments, just organize your sections with one or more `#`.
 
-For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/examples/example.beancount) files, it's the same for Markdown, but you use "*" instead.
+For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/examples/example.beancount) files, it's the same for Markdown, but you use `*` instead.
 
-For CSS files, you have to wrap your "//" comments between `/*` and `*/`:
+For CSS files, you have to wrap your `//` comments between `/*` and `*/`:
 
 <details>
- <summary>example.css</summary>
+ <summary>Click to view `example.css`</summary>
 
 ```css
 /*
@@ -320,10 +346,10 @@ For CSS files, you have to wrap your "//" comments between `/*` and `*/`:
 
 </details>
 
-For HTML files, you have to wrap your "//" comments between `<!--` and `-->`:
+For HTML files, you have to wrap your `//` comments between `<!--` and `-->`:
 
 <details>
- <summary>example.html</summary>
+ <summary>Click to view `example.html`</summary>
 
 ```html
 <!doctype html>
@@ -350,12 +376,32 @@ For HTML files, you have to wrap your "//" comments between `<!--` and `-->`:
 
 </details>
 
+For OCaml files, you have to wrap your `*` comments between `(*` and `*)`:
+
+<details>
+ <summary>Click to view `example.ml`</summary>
+
+```ocaml
+(*
+* ################################################################ Unique section
+*)
+
+let () = print_endline "Hello, World!"
+```
+
+</details>
+
 
 ## How can I contribute?
 
 If you have a suggestion or you found an issue, you can use GitHub issues and pull requests to contribute. 
 
 ## What changed from previous versions?
+
+### 2.0.1
+
+- added support for COBOL and other fancy languages
+- clarified section comment structure in README.md
 
 ### 2.0.0
 
@@ -370,3 +416,4 @@ If you have a suggestion or you found an issue, you can use GitHub issues and pu
 
 [^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
 [^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damage
+[^3]: The outdated toc to be replaced is defined as the the first match of a non-greedy regex
