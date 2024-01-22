@@ -1,6 +1,6 @@
 # Changelog for toc
 
-## Work in progress
+## [2.1.0] - 2024-01-22
 ### Added
 
 - Support for even more languages
@@ -9,7 +9,8 @@
 
 ### Documentation
 
-- Adding changelog support through git-cliff
+- Added changelog
+- Added changelog support through git-cliff
 
 ### Integrations
 

@@ -21,10 +21,11 @@ jobs:
         python-version: ["3.12"]
     steps:
       - name: Access source code
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         # needed to list changes
         with:
           fetch-depth: 0
+          token: ${{ github.token }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@master
         with:
@@ -55,21 +56,14 @@ jobs:
           args: -vv
         env:
           OUTPUT: CHANGELOG.md
-      - name: Commit full changelog to repo
-      - name: Access source code
-        uses: actions/checkout@master
-        # needed to list changes
-        with:
-          fetch-depth: 0
-          token: ${{ github.token }}
-      - name: Commit full changelog to repo
-        uses: actions/checkout@v4
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add "CHANGELOG.md"
-          git commit -m "auto: updated changelog"
-          git push
+      # skipped, You are not currently on a branch
+      #- name: Commit full changelog to repo
+      #  run: |
+      #    git config user.name github-actions
+      #    git config user.email github-actions@github.com
+      #    git add "CHANGELOG.md"
+      #    git commit -m "auto: updated changelog"
+      #    git push
       - name: Build package
         run: |
           python -m build
