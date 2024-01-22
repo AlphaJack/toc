@@ -73,6 +73,7 @@ jobs:
   release:
     name: Create a new release
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: Access package
         uses: actions/download-artifact@master
