@@ -14,16 +14,20 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "CHANGELOG.md"]}
+
 # ################################################################ PROJECT
 
 [project]
 name = "tableofcontents"
-version = "2.0.1"
+version = "2.1.0"
 authors = [
   { name="AlphaJack" },
 ]
 description = "Generate a table of contents from the comments of a file"
-readme = "README.md"
+#readme = "README.md"
+dynamic = ["readme"]
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -45,52 +49,67 @@ toc = "toc.cli:main"
 Homepage = "https://github.com/AlphaJack/toc"
 Issues = "https://github.com/AlphaJack/toc/issues"
 Repository = "https://github.com/AlphaJack/toc"
-Changelog = "https://github.com/AlphaJack/toc"
+Changelog = "https://github.com/AlphaJack/toc/blob/master/CHANGELOG.md"
 
 # ################################################################ TOOLS
 
-[tool.setuptools_scm]
-
-[remote.github]
-owner = "AlphaJack"
-repo = "tocf"
-
 [tool.git-cliff.git]
 conventional_commits = false
-commit_parsers = []
 filter_unconventional = false
 protect_breaking_commits = true
 filter_commits = false
 split_commits = true
 tag_pattern = "v[0-9].*"
+# handled manually
 skip_tags = "beta|alpha|v2.0.0|v1.0.0"
 ignore_tags = "rc"
 sort_commits = "newest"
+commit_parsers = [
+    { message = "^(feat|[Aa]dd)", group = "Added" },
+    { message = "^[Aa]dd", group = "Added" },
+    { message = "^change", group = "Changed" },
+    { message = "^[Dd]oc", group = "Documentation" },
+    { message = "^deprecat", group = "Deprecated" },
+    { message = "^fix", group = "Fixed" },
+    { message = "^ci", group = "Integrations" },
+    { message = "^remove", group = "Removed" },
+    { body = ".*security", group = "Security" },
+    { message = "^test", group = "Testing" },
+    { message = "^(auto|chore|skip)", skip = true },
+    { body = ".*", group = "Various" },
+]
 
 [tool.git-cliff.changelog]
 trim = true
-footer = ""
+header = """# Changelog for toc
+
+"""
 body = """
 {% if version %}\
-    ## toc {{ version | trim_start_matches(pat="v") }} - {{ timestamp | date(format="%Y-%m-%d") }}\
+    ## {{ version | trim_start_matches(pat="v") }} - {{ timestamp | date(format="%Y-%m-%d") }}\
 {% else %}\
-    ## latest commits\
+    ## Work in progress\
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | upper_first }}
+
     {% for commit in commits %}\
-        - {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message | upper_first }}
+        - {{ commit.message | split(pat=':') | last | trim | upper_first }}
     {% endfor %}\
+
 {% endfor %}\n
+"""
+footer = """
+## [2.0.0] - 2024-01-21
 
-## toc 2.0.0 - 2024-01-21
-
-- Rewritten in pure python
+- Rewriten `toc` in pure `python`
 - Published to PyPI as [`tableofcontents`](https://pypi.org/project/tableofcontents)
 - Added feature to prepend the table of contents to files, preserving shebangs
 
-## toc 1.0.0 - 2023-11-03
+## [1.0.0] - 2023-11-03
 
-- Initial release in Bash
-
+- Initial release of `toc` in `bash`, `perl`, `sed` and `awk`
 """
+postprocessors = [
+  { pattern = "[Aa]dding", replace = "Added" },
+]
