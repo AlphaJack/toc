@@ -1,0 +1,108 @@
+name: Create release and deploy to PyPI from a new tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+
+  build:
+    name: Test and build package
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.content }}
+      changelog: ${{ steps.changelog.outputs.content }}
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - name: Access source code
+        uses: actions/checkout@master
+        # needed for changelog
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.python-version }}+
+          cache: 'pip'
+      #- name: Install dependencies
+      #  run: |
+      #    python -m pip install --upgrade pip
+      #    python -m pip install flake8 pytest
+      #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      # https://github.com/orgs/community/discussions/26313#discussioncomment-3940092
+      - name: Store version
+        id: version
+        run: ./toc/cli.py --version
+      - name: Store partial changelog for release
+        id: changelog
+        uses: orhun/git-cliff-action@main
+        with:
+          config: pyproject.toml
+          args: -vv --latest --strip all
+        env:
+          OUTPUT: CHANGELOG-PARTIAL.md
+      - name: Test package
+        run: python -m unittest
+      - name: Build package
+        run: |
+          python -m build
+      - name: Store package
+        uses: actions/upload-artifact@master
+        with:
+          name: python-dist
+          path: dist
+      # generating and committing manually, as it would not appear in final release
+      #- name: Generate full changelog for repo
+      #  id: changelog-full
+      #  uses: orhun/git-cliff-action@main
+      #  with:
+      #    config: pyproject.toml
+      #    args: -vv
+      #  env:
+      #    OUTPUT: CHANGELOG-FULL.md
+      #- name: Commit full changelog to repo
+      #  run: |
+      #    git config user.name 'github-actions[bot]'
+      #    git config user.email 'github-actions[bot]@users.noreply.github.com'
+      #    set +e
+      #    git add CHANGELOG-FULL.md
+      #    git commit -m "Update changelog"
+      #    git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git master
+
+  release:
+    name: Create a new release
+    needs: build
+    steps:
+      # https://raw.githubusercontent.com/orhun/git-cliff/main/.github/workflows/cd.yml
+      - name: Create release
+        uses: softprops/action-gh-release@master
+        with:
+          name: ${{ needs.build.outputs.version }}
+          body: ${{ needs.build.outputs.changelog }} 
+          draft: false
+          
+
+          token: ${{ secrets.GITHUB_TOKEN }}
+          #fail_on_unmatched_files: true
+          #files: |
+          #  dist/*.whl
+          #  other file
+
+  pypi:
+    name: Deploy to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Access package
+        uses: actions/download-artifact@master
+        with:
+          name: python-dist
+          path: dist
+      - name: Deploy package
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
