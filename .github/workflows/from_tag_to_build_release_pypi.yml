@@ -55,27 +55,32 @@ jobs:
           name: python-dist
           path: dist
       # generating and committing manually, as it would not appear in final release
-      #- name: Generate full changelog for repo
-      #  id: changelog-full
-      #  uses: orhun/git-cliff-action@main
-      #  with:
-      #    config: pyproject.toml
-      #    args: -vv
-      #  env:
-      #    OUTPUT: CHANGELOG-FULL.md
-      #- name: Commit full changelog to repo
-      #  run: |
-      #    git config user.name 'github-actions[bot]'
-      #    git config user.email 'github-actions[bot]@users.noreply.github.com'
-      #    set +e
-      #    git add CHANGELOG-FULL.md
-      #    git commit -m "Update changelog"
-      #    git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git master
+      - name: Generate full changelog for repo
+        id: changelog-full
+        uses: orhun/git-cliff-action@main
+        with:
+          config: pyproject.toml
+          args: -vv
+        env:
+          OUTPUT: CHANGELOG-FULL.md
+      - name: Commit full changelog to repo
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          set +e
+          git add CHANGELOG-FULL.md
+          git commit -m "Update changelog"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git master
 
   release:
     name: Create a new release
     needs: build
     steps:
+      - name: Access package
+        uses: actions/download-artifact@master
+        with:
+          name: python-dist
+          path: dist
       # https://raw.githubusercontent.com/orhun/git-cliff/main/.github/workflows/cd.yml
       - name: Create release
         uses: softprops/action-gh-release@master
@@ -83,12 +88,10 @@ jobs:
           name: ${{ needs.build.outputs.version }}
           body: ${{ needs.build.outputs.changelog }} 
           draft: false
-          
-
           token: ${{ secrets.GITHUB_TOKEN }}
-          #fail_on_unmatched_files: true
-          #files: |
-          #  dist/*.whl
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.whl
           #  other file
 
   pypi:
