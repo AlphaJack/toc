@@ -54,21 +54,32 @@ class Toc:
     def set_character(self):
         # automatically select the comment type from its extension, if not already set
         match self.extension:
-            case "c" | "cc" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "html" | "java" | "js" | "kt" | "md" | "php" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
+            case "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "kt" | "md" | "pas" | "php" | "pp" | "proto" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
                 self.character = "//"
-            case "asm" | "beancount" | "cl" | "clj" | "cljs" | "cljc" | "edn" | "fasl" | "ini" | "lisp" | "lsp" | "rkt" | ".scm" | ".ss":
+            case "ahk" | "asm" | "beancount" | "cl" | "clj" | "cljs" | "cljc" | "edn" | "fasl" | "ini" | "lisp" | "lsp" | "rkt" | "scm" | "ss":
                 self.character = ";"
             case "bib" | "cls" | "erl" | "hrl" | "mat" | "sty" | "tex":
                 self.character = "%"
             case "adb" | "ads" | "elm" | "hs" | "lua" | "sql":
                 self.character = "--"
-            # if you are wondering, no, i will not add support for cobol
+            case "ml" | "mli":
+                self.character = "*"
+            case "vb" | "vba" | "vbs":
+                self.character = "'"
+            case "apl":
+                self.character = "⍝"
             # https://www.gavilan.edu/csis/languages/comments.html#_Toc53710123
-            case "bas":
+            case "bas" | "bat" | "cmd" | "com" | "sbl":
                 self.character = "REM"
-            case "f" | "for" | "f90" | "f95" | "f03" | "f15":
+            # https://stackoverflow.com/a/17665688
+            case "cob":
+                self.character = "      *>"
+            case "f" | "for":
                 self.character = "C"
-            # jl pl pm ps1 py r rb sh, and anything else
+            # https://github.com/textmate/fortran.tmbundle/issues/10#issuecomment-22660333
+            case "f90" | "f95" | "f03" | "f08" | "f15" | "f18":
+                self.character = "!"
+            # jl mojo pl pm ps1 py r rb sh, yml, and anything else
             case _:
                 self.character = "#"
         return self.character
@@ -208,6 +219,8 @@ class Toc:
                 _tocPrefix = "/*"
             case "html" | "md" | "xml":
                 _tocPrefix = "<!--"
+            case "ml" | "mli" | "scpd" | "scpt":
+                _tocPrefix = "(*"
             case _:
                 _tocPrefix = ""
         # begin the toc with the file name, truncating it if necessary
@@ -363,6 +376,8 @@ class Toc:
                 _tocSuffix = "*/"
             case "html" | "md" | "xml":
                 _tocSuffix = "-->"
+            case "ml" | "mli" | "scpd" | "scpt":
+                _tocSuffix = "*)"
             case _:
                 _tocSuffix = ""
         return _tocFooter, _tocSuffix
