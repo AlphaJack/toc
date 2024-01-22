@@ -27,16 +27,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}+
           cache: 'pip'
-      #- name: Install dependencies
-      #  run: |
-      #    python -m pip install --upgrade pip
-      #    python -m pip install flake8 pytest
-      #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      # https://github.com/orgs/community/discussions/26313#discussioncomment-3940092
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+      - name: Test package
+        run: python -m unittest
       - name: Store version
         id: version
         run: ./toc/cli.py --version
-      - name: Store partial changelog for release
+      - name: Store partial changelog for release notes
         id: changelog
         uses: orhun/git-cliff-action@main
         with:
@@ -44,8 +44,23 @@ jobs:
           args: -vv --latest --strip all
         env:
           OUTPUT: CHANGELOG-PARTIAL.md
-      - name: Test package
-        run: python -m unittest
+      # generating and committing manually, as it would not appear in final release
+      - name: Store full changelog for package and repo
+        id: changelog-full
+        uses: orhun/git-cliff-action@main
+        with:
+          config: pyproject.toml
+          args: -vv
+        env:
+          OUTPUT: CHANGELOG.md
+      - name: Commit full changelog to repo
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          set +e
+          git add CHANGELOG.md
+          git commit -m "auto: updated changelog"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git master
       - name: Build package
         run: |
           python -m build
@@ -54,23 +69,6 @@ jobs:
         with:
           name: python-dist
           path: dist
-      # generating and committing manually, as it would not appear in final release
-      - name: Generate full changelog for repo
-        id: changelog-full
-        uses: orhun/git-cliff-action@main
-        with:
-          config: pyproject.toml
-          args: -vv
-        env:
-          OUTPUT: CHANGELOG-FULL.md
-      - name: Commit full changelog to repo
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          set +e
-          git add CHANGELOG-FULL.md
-          git commit -m "Update changelog"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git master
 
   release:
     name: Create a new release

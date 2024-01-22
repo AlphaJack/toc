@@ -16,10 +16,7 @@
 // │  │  ├── Process multiple files
 // │  │  └── Exceptional file types
 // │  ├── How can I contribute?
-// │  └──┐What changed from previous versions?
-// │     ├── 2.0.1
-// │     ├── 2.0.0
-// │     └── 1.0.0
+// │  └── What changed from previous versions?
 // │
 // └───────────────────────────────────────────────────────────────
 -->
@@ -398,21 +395,7 @@ If you have a suggestion or you found an issue, you can use GitHub issues and pu
 
 ## What changed from previous versions?
 
-### 2.0.1
-
-- added support for COBOL and other fancy languages
-- clarified section comment structure in README.md
-
-### 2.0.0
-
-- rewritten in pure `python`
-- published to PyPI as [`tableofcontents`](https://pypi.org/project/tableofcontents)
-- added feature to prepend the table of contents to files, preserving shebangs
-
-### 1.0.0
-
-- initial release of `toc` in `bash`, `perl`, `sed` and `awk`
-
+See [CHANGELOG.md](./CHANGELOG.md)
 
 [^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
 [^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damage
