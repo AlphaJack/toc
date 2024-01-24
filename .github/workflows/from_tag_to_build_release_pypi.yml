@@ -22,6 +22,7 @@ name: Create GitHub release and deploy to PyPI from a new tag
 #   git tag v2.1.0 && git push --tags
 
 on:
+
   push:
     tags:
       - 'v*'
@@ -31,6 +32,7 @@ jobs:
 
   build:
     name: Test and build package
+    environment: production
     runs-on: ubuntu-latest
     # needed to push commit to repo
     permissions:
@@ -43,26 +45,32 @@ jobs:
       matrix:
         python-version: ["3.12"]
     steps:
+
       - name: Access source code
         uses: actions/checkout@master
         # needed to list changes
         with:
           fetch-depth: 0
           token: ${{ github.token }}
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@master
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install build wheel setuptools
           python -m pip install -e .
+
       - name: Test package
         run: python -m unittest
+
       - name: Store version
         id: version
         run: ./toc/cli.py --version
+
       - name: Store partial changelog for release notes
         id: changelog
         uses: orhun/git-cliff-action@main
@@ -71,6 +79,7 @@ jobs:
           args: -vv --latest --strip all
         env:
           OUTPUT: CHANGELOG-PARTIAL.md
+
       # generating and committing manually, as it would not appear in final release
       - name: Store full changelog for package and repo
         id: changelog-full
@@ -80,6 +89,7 @@ jobs:
           args: -vv
         env:
           OUTPUT: CHANGELOG.md
+
       # skipped, You are not currently on a branch
       #- name: Commit full changelog to repo
       #  run: |
@@ -88,9 +98,11 @@ jobs:
       #    git add "CHANGELOG.md"
       #    git commit -m "auto: updated changelog"
       #    git push
+
       - name: Build package
         run: |
           python -m build
+
       - name: Store package
         uses: actions/upload-artifact@master
         with:
@@ -106,11 +118,13 @@ jobs:
     permissions:
       contents: write
     steps:
+
       - name: Access package
         uses: actions/download-artifact@master
         with:
           name: python-dist
           path: dist
+
       - name: Rename package
         run: |
           cd "dist"
@@ -119,6 +133,7 @@ jobs:
           cd ..
           mkdir gh
           cp "dist/$oldname" "gh/$newname"
+
       # https://raw.githubusercontent.com/orhun/git-cliff/main/.github/workflows/cd.yml
       - name: Create release
         uses: softprops/action-gh-release@master
@@ -139,11 +154,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+
       - name: Access package
         uses: actions/download-artifact@master
         with:
           name: python-dist
           path: dist
+
       - name: Deploy package
         uses: pypa/gh-action-pypi-publish@unstable/v1
         with:
