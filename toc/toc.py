@@ -39,11 +39,12 @@ import sys
 # ################################################################ CLASS
 
 class Toc:
-    def __init__(self, file: str = "", lineNumbers: bool = False, character: str = ""):
-        self.file = file
-        self.extension = file.split(".")[-1].lower() if "." in file else ""
-        self.character = character
+    def __init__(self, input: str = "", output=None, lineNumbers: bool = False, character: str = "#"):
+        self.input = input
+        self.output = output
+        self.extension = input.split(".")[-1].lower() if "." in input else ""
         self.lineNumbers = lineNumbers
+        self.character = character
         self.err = None
         self.updated = False
 
@@ -91,14 +92,17 @@ class Toc:
         _, _outerToc = self._generate_toc()
         if _outerToc == "":
             # skip error if we already set self.err
-            print(f'Skipping empty "{self.character}" toc for {self.file}', file=sys.stderr) if self.err is None else None
+            print(f'Skipping empty "{self.character}" toc for {self.input}', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
             print(_outerToc)
 
 # ######## FILE
 
-    def to_file(self):
+    def to_file(self, output=None):
+        # if file has been specified, print there instead of the original file (useful for testing)
+        if self.output is None:
+            self.output = output if output else self.input
         # run twice because updating the toc may shift everything down
         n = 2 if self.lineNumbers else 1
         for i in range(n):
@@ -114,10 +118,10 @@ class Toc:
         self.innerTocBegin = f"{self.character} ┌───────────────────────────────────────────────────────────────┐"
         self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
         if _outerToc == "":
-            print(f'Skipping empty "{self.character}" toc for {self.file}', file=sys.stderr) if self.err is None else None
+            print(f'Skipping empty "{self.character}" toc for {self.input}', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
-            with open(self.file) as f:
+            with open(self.input) as f:
                 _data = f.read()
                 # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
                 if re.search(r"^%s$" % self.innerTocBegin, _data, re.MULTILINE) and re.search(r"^%s$" % self.innerTocEnd, _data, re.MULTILINE):
@@ -129,14 +133,14 @@ class Toc:
         # common function to rewrite file
         if data:
             try:
-                with open(self.file, "w") as f:
+                with open(self.output, "w") as f:
                     f.write(data)
             except PermissionError:
-                print(f"Skipping write-protected file {self.file}", file=sys.stderr)
+                print(f"Skipping write-protected file {self.output}", file=sys.stderr)
                 self.err = "write"
         elif not self.updated:
             # data should never be empty if self.updated = False, but in case least we prevented cleaning the file
-            print(f"Skipping purging file {self.file}", file=sys.stderr)
+            print(f"Skipping purging file {self.output}", file=sys.stderr)
             self.updated = True
         # elif self.updated: we skipped replacing the same toc
 
@@ -146,12 +150,12 @@ class Toc:
         # check for begin-of-file directives and write output
         _data = self._check_directives(outerToc)
         self._write_toc(_data)
-        print(f"Adding toc to file {self.file}", file=sys.stderr)
+        print(f"Adding toc to file {self.input}", file=sys.stderr)
         self.updated = True
 
     def _check_directives(self, outerToc):
         # if a frontmatter, shebang or directive is found, append after first line(s)
-        with open(self.file) as f:
+        with open(self.input) as f:
             _data = f.read()
             _firstLine = _data.split("\n", 1)[0]
             match self.extension:
@@ -193,12 +197,12 @@ class Toc:
         _data = self._replace_existing_toc(innerToc)
         self._write_toc(_data)
         if not self.updated:
-            print(f"Updating toc in file {self.file}", file=sys.stderr)
+            print(f"Updating toc in file {self.input}", file=sys.stderr)
             self.updated = True
 
     def _replace_existing_toc(self, innerToc):
         # replace over multiple lines between two patterns
-        with open(self.file) as f:
+        with open(self.input) as f:
             _data = f.read()
             # if the new toc is already present in the file, it makes no sense to rewrite the file
             # re.escape to treat dots and other characters literally
@@ -206,7 +210,7 @@ class Toc:
                 self.err = "same"
                 _data = None
                 if not self.updated:
-                    print(f"Skipping replacing same toc in file {self.file}", file=sys.stderr)
+                    print(f"Skipping replacing same toc in file {self.input}", file=sys.stderr)
                     self.updated = True
             else:
                 # use non-greedy regex to only replace the smalles portion of text between innerTocBegin and innerTocEnd
@@ -245,7 +249,7 @@ class Toc:
             case _:
                 _tocPrefix = ""
         # begin the toc with the file name, truncating it if necessary
-        _filename = self.file.split("/")[-1]
+        _filename = self.input.split("/")[-1]
         _filename = (_filename[:46] + "...") if len(_filename) > 46 else _filename
         _tocHeader = f"{self.character} ┌───────────────────────────────────────────────────────────────┐\n"
         _tocHeader += f"{self.character} │ Contents of {_filename}{' ' * (50 - len(_filename))}│\n"
@@ -259,7 +263,7 @@ class Toc:
         # read file content and process it accordingly
         # display alert for common errors
         try:
-            with open(self.file, "r") as f:
+            with open(self.input, "r") as f:
                 _lines = f.readlines()
                 match self.extension:
                     case "beancount":
@@ -270,23 +274,23 @@ class Toc:
                         _newtoc = self._process_other(_lines)
                 _tocBody = self._prettify_connectors(_newtoc)
         except FileNotFoundError:
-            print(f"Skipping non-existing file {self.file}", file=sys.stderr)
+            print(f"Skipping non-existing file {self.input}", file=sys.stderr)
             _tocBody = ""
             self.err = "notfound"
         except PermissionError:
-            print(f"Skipping read-protected file {self.file}", file=sys.stderr)
+            print(f"Skipping read-protected file {self.input}", file=sys.stderr)
             _tocBody = ""
             self.err = "read"
         except IsADirectoryError:
-            print(f"Skipping directory {self.file}", file=sys.stderr)
+            print(f"Skipping directory {self.input}", file=sys.stderr)
             _tocBody = ""
             self.err = "directory"
         except UnicodeDecodeError:
-            print(f"Skipping binary file {self.file}", file=sys.stderr)
+            print(f"Skipping binary file {self.input}", file=sys.stderr)
             _tocBody = ""
             self.err = "binary"
         except BaseException:
-            print(f"Skipping file {self.file}", file=sys.stderr)
+            print(f"Skipping file {self.input}", file=sys.stderr)
             _tocBody = ""
             self.err = "unknown"
         finally:

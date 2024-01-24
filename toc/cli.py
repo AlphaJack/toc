@@ -54,6 +54,7 @@ example comments:
     parser.add_argument("-c", action="store", dest="character", type=str, help="set an arbitrary comment character (e.g. //)")
     parser.add_argument("-f", "--to-file", action="store_true", help="add or update toc in file")
     parser.add_argument("-n", "--line-numbers", action="store_true", help="print line numbers in toc")
+    parser.add_argument("-o", action="store", dest="output_file", type=str, help="print output to another file")
     parser.add_argument("-v", "--version", action='version', version="%(prog)s " + __version__, help="Show version and exit")
     args = parser.parse_args()
     return args
@@ -70,8 +71,9 @@ def main():
         # set comment character and line numbers
         t.character = args.character if args.character else t.set_character()
         t.lineNumbers = args.line_numbers if args.line_numbers else False
-        # choose output
-        if args.to_file:
+        t.output = args.output_file if args.output_file else None
+        # print output
+        if args.to_file or args.output_file:
             t.to_file()
         else:
             t.to_stdout()
