@@ -61,11 +61,11 @@ Comments are structured in this way:
 // #### Fifth level
 ```
 
-By running `toc filename`, you will read the table of contents of that file
+By running `toc file.c`, you will read the table of contents of that file
 
-```
+```c
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of test.c                                            │
+// │ Contents of file.c                                            │
 // ├───────────────────────────────────────────────────────────────┘
 // │
 // ├──┐First level

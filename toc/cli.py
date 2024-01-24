@@ -39,11 +39,11 @@ def parse_args():
     example_usage = """
 example comments:
 
-​  # ################################################################ First level
-​  # ################################ Second level
-​  # ################ Third level
-​  # ######## Fourth level
-​  # #### Fifth level
+# ################################################################ First level
+# ################################ Second level
+# ################ Third level
+# ######## Fourth level
+# #### Fifth level
 """
     parser = argparse.ArgumentParser(
         prog="toc",

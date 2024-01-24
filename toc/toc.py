@@ -120,7 +120,7 @@ class Toc:
             with open(self.file) as f:
                 _data = f.read()
                 # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
-                if re.search(r'^%s$' % self.innerTocBegin, _data, flags=re.MULTILINE) and re.search(r'^%s$' % self.innerTocEnd, _data, flags=re.MULTILINE):
+                if re.search(r"^%s$" % self.innerTocBegin, _data, re.MULTILINE) and re.search(r"^%s$" % self.innerTocEnd, _data, re.MULTILINE):
                     self._update_toc(_innerToc)
                 else:
                     self._add_toc(_outerToc)
@@ -143,26 +143,47 @@ class Toc:
 # #### ADD
 
     def _add_toc(self, outerToc):
-        # check for shebang and write output
-        _data = self._check_shebang(outerToc)
+        # check for begin-of-file directives and write output
+        _data = self._check_directives(outerToc)
         self._write_toc(_data)
         print(f"Adding toc to file {self.file}", file=sys.stderr)
         self.updated = True
 
-    def _check_shebang(self, outerToc):
-        # if shebang is found, append after first line
+    def _check_directives(self, outerToc):
+        # if a frontmatter, shebang or directive is found, append after first line(s)
         with open(self.file) as f:
             _data = f.read()
             _firstLine = _data.split("\n", 1)[0]
-            if re.search(r'^#!/usr', _firstLine):
-                # print("adding toc after shebang")
-                _firstFewLines = _firstLine + "\n\n" + outerToc
-            # else prepend as first line and put everything else after
-            else:
-                # print("adding toc before content")
-                _firstFewLines = outerToc + "\n\n" + _firstLine
-            # print(firstFewLines)
-            _data = re.sub(_firstLine, _firstFewLines, _data, flags=re.DOTALL)
+            match self.extension:
+                case "md":
+                    # multi line yaml, toml, js frontmatter for markdown
+                    if re.search(r"^---", _firstLine):
+                        _frontmatter = re.search(r"^---\n.*?\n---", _data, re.DOTALL).group(0)
+                    elif re.search(r"^\+\+\+", _firstLine):
+                        _frontmatter = re.search(r"^\+\+\+\n.*?\n\+\+\+", _data, re.DOTALL).group(0)
+                    elif re.search(r"^\{", _firstLine):
+                        _frontmatter = re.search(r"^\{\n.*?\n\}", _data, re.DOTALL).group(0)
+                    else:
+                        _frontmatter = None
+                    _firstLine = _frontmatter if _frontmatter else _firstLine
+                    _firstFewLines = _firstLine + "\n\n" + outerToc if _frontmatter else outerToc + "\n\n" + _firstLine
+                    # print(_frontmatter)
+                    # print(_firstFewLines)
+                case _:
+                    # single line shebang, xml, html, vim, emacs
+                    if (re.search(r"^#!", _firstLine)
+                        or re.search(r"<\?xml", _firstLine, re.IGNORECASE)
+                        or re.search(r"<!doctype", _firstLine, re.IGNORECASE)
+                        or re.search(r"^" + re.escape(self.character) + r"\s+([Vv]im?|ex):", _firstLine)
+                        or re.search(r"^" + re.escape(self.character) + r"\s*-\*-", _firstLine)):
+                        # print("adding toc after shebang")
+                        _firstFewLines = _firstLine + "\n\n" + outerToc
+                    # else prepend as first line and put everything else after
+                    else:
+                        # print("adding toc before content")
+                        _firstFewLines = outerToc + "\n\n" + _firstLine
+            # print(_firstFewLines)
+            _data = re.sub(re.escape(_firstLine), _firstFewLines, _data)
             return _data
 
 # #### UPDATE
@@ -181,7 +202,7 @@ class Toc:
             _data = f.read()
             # if the new toc is already present in the file, it makes no sense to rewrite the file
             # re.escape to treat dots and other characters literally
-            if re.search(re.escape(innerToc), _data, flags=re.MULTILINE):
+            if re.search(re.escape(innerToc), _data, re.MULTILINE):
                 self.err = "same"
                 _data = None
                 if not self.updated:
@@ -190,7 +211,7 @@ class Toc:
             else:
                 # use non-greedy regex to only replace the smalles portion of text between innerTocBegin and innerTocEnd
                 # use count to only replace the first valid region in file
-                _data = re.sub('%s(.*?)%s' % (self.innerTocBegin, self.innerTocEnd), innerToc, _data, count=1, flags=re.DOTALL)
+                _data = re.sub(r"%s(.*?)%s" % (self.innerTocBegin, self.innerTocEnd), innerToc, _data, count=1, flags=re.DOTALL)
             return _data
 
 # ################ TOC GENERATION
@@ -277,9 +298,9 @@ class Toc:
         # pars beancount files, reusing sections
         _oldtoc, _newtoc = [], []
         if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.match(r'^\*+ .*$', line)]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^\*+ .*$", line)]
         else:
-            _oldtoc = [line for line in lines if re.match(r'^\*+ .*$', line)]
+            _oldtoc = [line for line in lines if re.search(r"^\*+ .*$", line)]
         _newtoc = [re.sub(r"^\*{6}", "\t│              └──", line.strip()) for line in _oldtoc]
         _newtoc = [re.sub(r"^\*{5}", "\t│           └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^\*{4}", "\t│        └──", line) for line in _newtoc]
@@ -295,9 +316,9 @@ class Toc:
         # pars markdown files, reusing headings
         _oldtoc, _newtoc = [], []
         if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.match(r'^#+ [^#│├└┌]', line)]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^#+ ", line)] # [^#│├└┌]
         else:
-            _oldtoc = [line for line in lines if re.match(r'^#+ [^#│├└┌]', line)]
+            _oldtoc = [line for line in lines if re.search(r"^#+ ", line)] # [^#│├└┌]         # skip matching toc if "#" is used as character symbol of markdown
         _newtoc = [re.sub(r"^#{6}", "\t│              └──", line.strip()) for line in _oldtoc]
         _newtoc = [re.sub(r"^#{5}", "\t│           └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^#{4}", "\t│        └──", line) for line in _newtoc]
