@@ -1,7 +1,8 @@
-__pycache__/
-*.egg-info/
-build/
-dist/
+__pycache__
+*.egg-info
+build
+dist
 .pytest_cache
 .benchmarks
 .coverage
+tests/output/*

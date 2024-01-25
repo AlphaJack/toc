@@ -84,9 +84,9 @@ class TestTocFiles(unittest.TestCase):
         cls.reference_dir = cls.t / "reference"
         try:
             shutil.rmtree(cls.output_dir)
-            Path.mkdir(cls.output_dir)
         except OSError:
             pass
+        Path.mkdir(cls.output_dir, parents=True, exist_ok=True)
 
     def test_all_files(self):
         # process each file in the input_dir
