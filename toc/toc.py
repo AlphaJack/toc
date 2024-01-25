@@ -4,7 +4,7 @@
 # │ Contents of toc.py                                            │
 # ├───────────────────────────────────────────────────────────────┘
 # │
-# ├── LIBRARIES
+# ├── MODULES
 # ├──┐CLASS
 # │  ├──┐PUBLIC METHODS
 # │  │  ├── COMMENT CHARACTER
@@ -28,7 +28,7 @@
 # └───────────────────────────────────────────────────────────────
 
 
-# ################################################################ LIBRARIES
+# ################################################################ MODULES
 
 # regex
 import re
@@ -40,9 +40,9 @@ import sys
 
 class Toc:
     def __init__(self, input: str = "", output=None, lineNumbers: bool = False, character: str = "#"):
-        self.input = input
+        self.input = str(input)
         self.output = output
-        self.extension = input.split(".")[-1].lower() if "." in input else ""
+        self.extension = self.input.split(".")[-1].lower() if "." in self.input else ""
         self.lineNumbers = lineNumbers
         self.character = character
         self.err = None
