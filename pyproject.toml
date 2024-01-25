@@ -70,11 +70,10 @@ commit_parsers = [
     { message = "^[Dd]oc", group = "Documentation" },
     { message = "^deprecat", group = "Deprecated" },
     { message = "^fix", group = "Fixed" },
-    { message = "^ci", group = "Integrations" },
     { message = "^remove", group = "Removed" },
     { body = ".*security", group = "Security" },
     { message = "^test", group = "Testing" },
-    { message = "^(auto|chore|skip)", skip = true },
+    { message = "^(auto|ci|chore|skip)", skip = true },
     { body = ".*", group = "Various" },
 ]
 
