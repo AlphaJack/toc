@@ -6,3 +6,4 @@ dist
 .benchmarks
 .coverage
 tests/output/*
+htmlcov
