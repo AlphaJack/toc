@@ -3,12 +3,16 @@
 ## Work in progress
 ### Added
 
+- Man pages support (groff/mdoc)
+- Native perl pod support
 - Specify arbitrary output with `-o output_file`
 - Respect xml, doctype, vim and emacs directives
 - Respect markdown frontmatters
 
 ### Documentation
 
+- Split README.md in USAGE.md
+- Updated changelog
 - Renamed first example to file.c
 
 ### Fixed
@@ -18,6 +22,8 @@
 
 ### Testing
 
+- Not committing local test coverage
+- Not considering files under tests/output
 - Added input and reference test for testing
 
 ## [2.1.0] - 2024-01-22
