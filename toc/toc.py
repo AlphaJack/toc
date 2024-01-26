@@ -150,7 +150,7 @@ class Toc:
         # check for begin-of-file directives and write output
         _data = self._check_directives(outerToc)
         self._write_toc(_data)
-        print(f"Adding toc to file {self.input}", file=sys.stderr)
+        print(f"Adding toc to file {self.output}", file=sys.stderr)
         self.updated = True
 
     def _check_directives(self, outerToc):
@@ -174,12 +174,13 @@ class Toc:
                     # print(_frontmatter)
                     # print(_firstFewLines)
                 case _:
-                    # single line shebang, xml, html, vim, emacs
+                    # single line shebang, xml, html, vim, emacs, perl pod
                     if (re.search(r"^#!", _firstLine)
                         or re.search(r"<\?xml", _firstLine, re.IGNORECASE)
                         or re.search(r"<!doctype", _firstLine, re.IGNORECASE)
                         or re.search(r"^" + re.escape(self.character) + r"\s+([Vv]im?|ex):", _firstLine)
-                        or re.search(r"^" + re.escape(self.character) + r"\s*-\*-", _firstLine)):
+                        or re.search(r"^" + re.escape(self.character) + r"\s*-\*-", _firstLine)
+                        or re.search(r"^" + re.escape(self.character) + r"^=pod$", _firstLine)):
                         # print("adding toc after shebang")
                         _firstFewLines = _firstLine + "\n\n" + outerToc
                     # else prepend as first line and put everything else after
@@ -197,7 +198,7 @@ class Toc:
         _data = self._replace_existing_toc(innerToc)
         self._write_toc(_data)
         if not self.updated:
-            print(f"Updating toc in file {self.input}", file=sys.stderr)
+            print(f"Updating toc in file {self.output}", file=sys.stderr)
             self.updated = True
 
     def _replace_existing_toc(self, innerToc):
@@ -210,7 +211,7 @@ class Toc:
                 self.err = "same"
                 _data = None
                 if not self.updated:
-                    print(f"Skipping replacing same toc in file {self.input}", file=sys.stderr)
+                    print(f"Skipping replacing same toc in file {self.output}", file=sys.stderr)
                     self.updated = True
             else:
                 # use non-greedy regex to only replace the smalles portion of text between innerTocBegin and innerTocEnd
@@ -246,6 +247,8 @@ class Toc:
                 _tocPrefix = "<!--"
             case "ml" | "mli" | "scpd" | "scpt":
                 _tocPrefix = "(*"
+            case "pl" | "pod":
+                _tocPrefix = "=encoding utf8\n=begin comment"
             case _:
                 _tocPrefix = ""
         # begin the toc with the file name, truncating it if necessary
@@ -270,6 +273,8 @@ class Toc:
                         _newtoc = self._process_beancount(_lines)
                     case "md":
                         _newtoc = self._process_markdown(_lines)
+                    case "pl" | "pod":
+                        _newtoc = self._process_pod(_lines)
                     case _:
                         _newtoc = self._process_other(_lines)
                 _tocBody = self._prettify_connectors(_newtoc)
@@ -329,6 +334,25 @@ class Toc:
         _newtoc = [re.sub(r"^#{3}", "\t│     └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^#{2}", "\t│  └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^#", "\t├──", line) for line in _newtoc]
+        _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
+        return _newtoc
+
+# #### POD FILES
+
+    # https://perldoc.perl.org/perlpod
+    def _process_pod(self, lines):
+        # pars beancount files, reusing sections
+        _oldtoc, _newtoc = [], []
+        if self.lineNumbers:
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^=head\d .*$", line)]
+        else:
+            _oldtoc = [line for line in lines if re.search(r"^=head\d .*$", line)]
+        _newtoc = [re.sub(r"^=head6", "\t│              └──", line.strip()) for line in _oldtoc]
+        _newtoc = [re.sub(r"^=head5", "\t│           └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^=head4", "\t│        └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^=head3", "\t│     └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^=head2", "\t│  └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^=head1", "\t├──", line) for line in _newtoc]
         _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
         return _newtoc
 
@@ -403,6 +427,8 @@ class Toc:
                 _tocSuffix = "-->"
             case "ml" | "mli" | "scpd" | "scpt":
                 _tocSuffix = "*)"
+            case "pl" | "pod":
+                _tocSuffix = "=end comment"
             case _:
                 _tocSuffix = ""
         return _tocFooter, _tocSuffix
