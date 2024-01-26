@@ -63,6 +63,9 @@ class Toc:
                 self.character = "%"
             case "adb" | "ads" | "elm" | "hs" | "lua" | "sql":
                 self.character = "--"
+            # https://www.gnu.org/software/groff/manual/, https://manpages.bsd.lv/mdoc.html
+            case "1" | "1m" | "2" | "3" | "4" | "5" | "6" | "7" | "8":
+                self.character = '.\\"'
             case "ml" | "mli":
                 self.character = "*"
             case "vb" | "vba" | "vbs":
@@ -304,7 +307,7 @@ class Toc:
 # #### BEANCOUNT FILES
 
     def _process_beancount(self, lines):
-        # pars beancount files, reusing sections
+        # pars beancount files, reusing collapsible sections
         _oldtoc, _newtoc = [], []
         if self.lineNumbers:
             _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^\*+ .*$", line)]
@@ -341,7 +344,7 @@ class Toc:
 
     # https://perldoc.perl.org/perlpod
     def _process_pod(self, lines):
-        # pars beancount files, reusing sections
+        # pars perl files, reusing headings
         _oldtoc, _newtoc = [], []
         if self.lineNumbers:
             _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^=head\d .*$", line)]

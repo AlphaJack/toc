@@ -88,7 +88,9 @@ If you are using Arch or Manjaro Linux, you can install [toc](https://aur.archli
 
 You should now be able to run `toc -h` to display a list of parameter you can use.
 
-See [USAGE.md](./USAGE.md) for step-by-step explanations of the different features, and <https://regex101.com/r/ngzZXN/1> for examples of valid and invalid comments.
+See [USAGE.md](./USAGE.md) for step-by-step explanations of the different features, and languages that don't need comments (e.g. Markdown) or needs special attention (e.g. CSS)
+
+See <https://regex101.com/r/ngzZXN/1> for examples of valid and invalid comments.
 
 ## How can I contribute?
 

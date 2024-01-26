@@ -9,11 +9,14 @@ The scenarios below show different features.
    - [Show line numbers](#show-line-numbers)
    - [Process multiple files](#process-multiple-files)
    - [Exceptional file types](#exceptional-file-types)
-      - [Markdown](#markdown)
-      - [Beancount](#beancount)
-      - [CSS](#css)
-      - [HTML](#html)
-      - [OCaml](#ocaml)
+      - [No comments needed](#no-comments-needed)
+         - [Markdown](#markdown)
+         - [Beancount](#beancount)
+         - [Perl](#perl)
+      - [Wrap around comments needed](#wrap-around-comments-needed)
+         - [CSS](#css)
+         - [HTML](#html)
+         - [OCaml](#ocaml)
 
 ## Read the table of contents
 
