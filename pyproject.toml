@@ -73,7 +73,7 @@ commit_parsers = [
     { message = "^remove", group = "Removed" },
     { body = ".*security", group = "Security" },
     { message = "^test", group = "Testing" },
-    { message = "^(auto|ci|chore|skip)", skip = true },
+    { message = "^(auto|ci|chore|minor|skip)", skip = true },
     { body = ".*", group = "Various" },
 ]
 

@@ -50,11 +50,13 @@ example comments:
         description="Generate a table of contents from the comments of a file",
         epilog=example_usage,
         formatter_class=RawDescriptionHelpFormatter)
+    group = parser.add_mutually_exclusive_group()
     parser.add_argument("files", nargs="*", help="files to process")
     parser.add_argument("-c", action="store", dest="character", type=str, help="set an arbitrary comment character (e.g. //)")
     parser.add_argument("-f", "--to-file", action="store_true", help="add or update toc in file")
+    group.add_argument("-l", "--from-list", action="store_true", help="process a list of files")
     parser.add_argument("-n", "--line-numbers", action="store_true", help="print line numbers in toc")
-    parser.add_argument("-o", action="store", dest="output_file", type=str, help="print output to another file")
+    group.add_argument("-o", action="store", dest="output_file", type=str, help="print output to another file")
     parser.add_argument("-v", "--version", action='version', version="%(prog)s " + __version__, help="Show version and exit")
     args = parser.parse_args()
     return args
@@ -65,7 +67,14 @@ example comments:
 def main():
     # parse arguments
     args = parse_args()
-    for file in args.files:
+    if args.from_list:
+        files = []
+        for list in args.files:
+            with open(list, "r") as list_content:
+                files += list_content.read().splitlines()
+    else:
+        files = args.files
+    for file in files:
         # initialize instance
         t = Toc(file)
         # set comment character and line numbers
