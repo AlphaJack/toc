@@ -1,6 +1,6 @@
 <!--
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of markdown_empty_first_line.md                      │
+// │ Contents of markdown_first_line_empty.md                      │
 // ├───────────────────────────────────────────────────────────────┘
 // │
 // ├── Markdown with empty first line
