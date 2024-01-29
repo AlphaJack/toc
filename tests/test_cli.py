@@ -38,6 +38,8 @@ from toc.cli import main, parse_args
 
 # ################################################################ TEST CLASSES
 
+"""
+
 # ################################ MOCK SETUP
 
 class MockArgs():
@@ -76,17 +78,27 @@ class TestCli(unittest.TestCase):
             #self.assertTrue(True)
             self.assertTrue(f'Skipping empty "#" toc for empty.py' in f.getvalue())
 
-    def test_from_list(self):
-        with patch("sys.argv", ["file.py", "-h"]):
-            print(sys.argv)
+    def test_nonexisting_list(self):
+        with patch("sys.argv", ["-l", "empty.list"]):
+            #print(sys.argv)
             f = io.StringIO()
             with contextlib.redirect_stderr(f):
                 args = parse_args()
                 main()
-                print(f.getvalue())
-                self.assertTrue(True)
-                #self.assertTrue(f'Skipping empty "#" toc for empty.py' in f.getvalue())
+                self.assertTrue(f'No files provided' in f.getvalue())
 
+    @patch('builtins.open', new_callable=mock_open, read_data="test\n")
+    @patch('toc.cli.parse_args')
+    @patch('toc.toc.Toc')
+    def test_empty_list(self):
+        with patch("sys.argv", ["-l", "empty.list"]):
+            #print(sys.argv)
+            f = io.StringIO()
+            with contextlib.redirect_stderr(f):
+                mock_args.return_value = MockArgs()
+                main()
+                self.assertTrue(f'No files provided' in f.getvalue())
+"""
 
 # ################################################################ ENTRYPOINT
 

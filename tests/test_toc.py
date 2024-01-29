@@ -88,7 +88,7 @@ class TestTocFiles(unittest.TestCase):
             pass
         Path.mkdir(cls.output_dir, parents=True, exist_ok=True)
 
-    def test_all_files(self):
+    def test_input_files(self):
         # process each file in the input_dir
         for file in Path.iterdir(self.input_dir):
             print(f"\nProcessing {file.name}")
