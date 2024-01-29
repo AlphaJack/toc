@@ -1,8 +1,30 @@
+<!--
+// ┌───────────────────────────────────────────────────────────────┐
+// │ Contents of CHANGELOG.md                                      │
+// ├───────────────────────────────────────────────────────────────┘
+// │
+// ├──┐Changelog - toc
+// │  ├──┐[2.2.0] - 2024-01-29
+// │  │  ├── Added
+// │  │  ├── Documentation
+// │  │  ├── Fixed
+// │  │  └── Testing
+// │  ├──┐[2.1.0] - 2024-01-22
+// │  │  ├── Added
+// │  │  └── Documentation
+// │  ├── [2.0.0] - 2024-01-21
+// │  └── [1.0.0] - 2023-11-03
+// │
+// └───────────────────────────────────────────────────────────────
+-->
+
 # Changelog - toc
 
-## Work in progress
+## [2.2.0] - 2024-01-29
 ### Added
 
+- Glob expansion support when parsing lists of files
+- Read files from lists with `-l`
 - Man pages support (groff/mdoc)
 - Native perl pod support
 - Specify arbitrary output with `-o output_file`
@@ -17,11 +39,15 @@
 
 ### Fixed
 
+- Limiting re.sub to 1 also if toc needs to be added
+- Avoid re.sub if first line is empty
 - Sanitizing input file type to str
-- Fixed a bug thay may lead to multiple tocs being added
+- Fixed a bug that may lead to multiple tocs being added
 
 ### Testing
 
+- Added new cases to test toc with empty or repeated first line of file
+- Testing also cli script
 - Not committing local test coverage
 - Not considering files under tests/output
 - Added input and reference test for testing
