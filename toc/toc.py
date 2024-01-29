@@ -250,7 +250,7 @@ class Toc:
                 _tocPrefix = "<!--"
             case "ml" | "mli" | "scpd" | "scpt":
                 _tocPrefix = "(*"
-            case "pl" | "pod":
+            case "pl" | "pm" | "pod":
                 _tocPrefix = "=encoding utf8\n=begin comment"
             case _:
                 _tocPrefix = ""
@@ -276,7 +276,7 @@ class Toc:
                         _newtoc = self._process_beancount(_lines)
                     case "md":
                         _newtoc = self._process_markdown(_lines)
-                    case "pl" | "pod":
+                    case "pl" | "pm" | "pod":
                         _newtoc = self._process_pod(_lines)
                     case _:
                         _newtoc = self._process_other(_lines)
@@ -430,7 +430,7 @@ class Toc:
                 _tocSuffix = "-->"
             case "ml" | "mli" | "scpd" | "scpt":
                 _tocSuffix = "*)"
-            case "pl" | "pod":
+            case "pl" | "pm" | "pod":
                 _tocSuffix = "=end comment"
             case _:
                 _tocSuffix = ""

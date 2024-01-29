@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # ┌───────────────────────────────────────────────────────────────┐
-# │ Contents of test_all.py                                       │
+# │ Contents of test_toc.py                                       │
 # ├───────────────────────────────────────────────────────────────┘
 # │
 # ├── MODULES
@@ -21,6 +21,7 @@ import shutil
 
 # current directory
 from pathlib import Path
+
 # load local module rather than system installed version
 import sys
 project_root = Path(__file__).resolve().parent.parent
@@ -28,7 +29,6 @@ sys.path.insert(0, project_root)
 
 # module to test
 from toc.toc import Toc
-import toc.cli
 
 # ################################################################ TEST CLASSES
 # ################################ SINGLE METHODS
@@ -91,7 +91,7 @@ class TestTocFiles(unittest.TestCase):
     def test_all_files(self):
         # process each file in the input_dir
         for file in Path.iterdir(self.input_dir):
-            print(f"Processing {file.name}")
+            print(f"\nProcessing {file.name}")
             input_file = self.input_dir / file.name
             output_file = self.output_dir / file.name
             reference_file = self.reference_dir / file.name

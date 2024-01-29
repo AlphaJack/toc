@@ -51,13 +51,13 @@ example comments:
         epilog=example_usage,
         formatter_class=RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group()
-    parser.add_argument("files", nargs="*", help="files to process")
+    parser.add_argument("files", nargs="*", help="files or lists of files to process")
     parser.add_argument("-c", action="store", dest="character", type=str, help="set an arbitrary comment character (e.g. //)")
     parser.add_argument("-f", "--to-file", action="store_true", help="add or update toc in file")
-    group.add_argument("-l", "--from-list", action="store_true", help="process a list of files")
+    group.add_argument("-l", "--from-list", action="store_true", help="consider inputs as lists of files")
     parser.add_argument("-n", "--line-numbers", action="store_true", help="print line numbers in toc")
     group.add_argument("-o", action="store", dest="output_file", type=str, help="print output to another file")
-    parser.add_argument("-v", "--version", action='version', version="%(prog)s " + __version__, help="Show version and exit")
+    parser.add_argument("-v", "--version", action='version', version="%(prog)s " + __version__, help="show version and exit")
     args = parser.parse_args()
     return args
 
@@ -67,13 +67,19 @@ example comments:
 def main():
     # parse arguments
     args = parse_args()
+    # consider all files as lists
     if args.from_list:
         files = []
         for list in args.files:
             with open(list, "r") as list_content:
                 files += list_content.read().splitlines()
+    # only keep the first file
+    elif args.output_file:
+        files = [args.files[0]]
+    # consider all files
     else:
         files = args.files
+    # process all files individually
     for file in files:
         # initialize instance
         t = Toc(file)
