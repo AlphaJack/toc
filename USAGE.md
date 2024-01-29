@@ -1,3 +1,31 @@
+<!--
+// ┌───────────────────────────────────────────────────────────────┐
+// │ Contents of USAGE.md                                          │
+// ├───────────────────────────────────────────────────────────────┘
+// │
+// ├──┐Detailed TOC usage
+// │  ├── Read the table of contents
+// │  ├── Embed the table of contents in the original file
+// │  └── Process multiple files
+// ├── ignore-this-file.txt
+// ├──┐glob expansion
+// │  ├── Show line numbers
+// │  ├── Set a custom comment character
+// │  ├── Redirect output to another file
+// │  ├── Other commands
+// │  └──┐Exceptional file types
+// │     ├──┐No comments needed
+// │     │  ├── Markdown
+// │     │  ├── Beancount
+// │     │  └── Perl
+// │     └──┐Wrap around comments needed
+// │        ├── CSS
+// │        ├── HTML
+// │        └── OCaml
+// │
+// └───────────────────────────────────────────────────────────────
+-->
+
 # Detailed TOC usage
 
 The scenarios below show different features.
@@ -51,24 +79,7 @@ let Section5 = "Write //, 4 hash characters and the name of section"
 If you run `toc example.js`, the program will output the following (stdout):
 
 ```js
-// ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of USAGE.md                                          │
-// ├───────────────────────────────────────────────────────────────┘
-// │
-// ├──┐Detailed TOC usage
-// │  ├── Read the table of contents
-// │  ├── Embed the table of contents in the original file
-// │  ├── Set a custom comment character
-// │  ├── Show line numbers
-// │  ├── Process multiple files
-// │  └──┐Exceptional file types
-// │     ├── Markdown
-// │     ├── Beancount
-// │     ├── CSS
-// │     ├── HTML
-// │     └── OCaml
-// │
-// └───────────────────────────────────────────────────────────────
+
 ```
 
 ## Embed the table of contents in the original file
@@ -192,11 +203,50 @@ let Section_1_2_5 = "Write //, 4 hash characters and the name of section"
 
 </details>
 
-## Set a custom comment character
+## Process multiple files
 
-But how could `toc` recognize that `//` is the proper comment character for that file?
-Well, thanks to AI[^1] `toc` supports most programming and markup languages, from COBOL to Carbon.
-In case it doesn't work as expected, you can force the behavior by running `toc -c "//" example.xyz`.
+You can alternatively write the files you want to keep updated in a simple text list:
+
+<details>
+ <summary>Click to view `tocfiles.txt`</summary>
+
+```python
+# ignore-this-file.txt
+README.md
+USAGE.md
+CHANGELOG.md
+toc/cli.py
+toc/toc.py
+# glob expansion
+tests/test*.py
+```
+</details>
+
+To keep these files up-to-date, you just need to run `toc -l -f tocfiles.txt`:
+
+```
+Skipping replacing same toc in file "README.md"
+Updating toc in file "USAGE.md"
+Adding toc to file "CHANGELOG.md"
+Updating toc in file "toc/cli.py"
+Updating toc in file "toc/toc.py"
+Skipping replacing same toc in file "tests/test_cli.py"
+Skipping replacing same toc in file "tests/test_toc.py"
+```
+
+Note that more than one list can be passed in a single command, lines starting with "#" are ignored, and there is support for glob expansion.
+
+If you feel brave enough, you can run `toc *` over your entire code base, as its AI[^2] will:
+
+- skip directories
+- skip non-text files
+- skip non-existing files
+- skip non-readable files
+- skip non-writable files
+- skip files that don't have suitable "section" comments
+- skip files whose toc is already up-to-date
+- only edit files whose toc can be added or updated safely[^3]
+- preserve shebangs, markdown frontmatters and other declarations of edited files
 
 ## Show line numbers
 
@@ -220,31 +270,23 @@ For very long files, it may come in handy to run `toc -n example.js` to see the 
 // └───────────────────────────────────────────────────────────────
 ```
 
-## Process multiple files
+## Set a custom comment character
 
-If you feel brave enough, you can run `toc` over your entire code base, as its AI[^2] will make it:
+But how could `toc` recognize that `//` is the proper comment character for that file?
+Well, thanks to AI[^1] `toc` supports most programming and markup languages, from COBOL to Carbon.
+In case it doesn't work as expected, you can force the behavior by running `toc -c "//" example.xyz`.
 
-- skip directories (see `.` below)
-- skip non-text files (see `toc.cpython-311.pyc` below)
-- skip non-existing files
-- skip non-readable files
-- skip non-writable files
-- skip files that don't have suitable "section" comments (see `__init__.py` below)
-- skip files whose toc is already up-to-date (see `toc.py` below)
-- only edit files whose toc can be added or updated safely[^3] (see `cli.py` below)
-- preserve shebangs of edited files
+## Redirect output to another file
 
-```
-Skipping directory .
-Skipping empty "#" toc for ./__init__.py
-Skipping directory ./__pycache__
-Skipping binary file ./__pycache__/toc.cpython-311.pyc
-Skipping replacing same toc in file ./toc.py
-Updating toc in file ./cli.py
-Skipping replacing same toc in file ./example.js
-```
+For testing purposes, you can run `toc -o output.py input.py` to choose a different output file.
 
-Additionally, you can run `toc -h` for usage info and `toc -v` to read the current version
+Note that this option does nothing if the toc in "input.py" is already up-to-date.
+
+The `-o` flag is incompatible with the `-l` one.
+
+## Other commands
+
+You can run `toc -h` for usage info and `toc -v` to read the current version
 
 ## Exceptional file types
 ### No comments needed

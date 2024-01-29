@@ -21,6 +21,7 @@
 # │        ├──┐BODY
 # │        │  ├── BEANCOUNT FILES
 # │        │  ├── MARKDOWN FILES
+# │        │  ├── POD FILES
 # │        │  ├── OTHER FILES
 # │        │  └── PRETTIFY CONNECTORS
 # │        └── FOOTER
@@ -47,6 +48,9 @@ class Toc:
         self.character = character
         self.err = None
         self.updated = False
+        self.innerTocBegin = None
+        self.innerTocTitle = None
+        self.innerTocEnd = None
 
 # ################################ PUBLIC METHODS
 
@@ -95,7 +99,7 @@ class Toc:
         _, _outerToc = self._generate_toc()
         if _outerToc == "":
             # skip error if we already set self.err
-            print(f'Skipping empty "{self.character}" toc for {self.input}', file=sys.stderr) if self.err is None else None
+            print(f'Skipping empty "{self.character}" toc for "{self.input}"', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
             print(_outerToc)
@@ -118,16 +122,14 @@ class Toc:
     def _add_or_update(self):
         # if the file does not contain a toc, add it, otherwise update it
         _innerToc, _outerToc = self._generate_toc()
-        self.innerTocBegin = f"{self.character} ┌───────────────────────────────────────────────────────────────┐"
-        self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
         if _outerToc == "":
-            print(f'Skipping empty "{self.character}" toc for {self.input}', file=sys.stderr) if self.err is None else None
+            print(f'Skipping empty "{self.character}" toc for "{self.input}"', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
             with open(self.input) as f:
                 _data = f.read()
                 # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
-                if re.search(r"^%s$" % self.innerTocBegin, _data, re.MULTILINE) and re.search(r"^%s$" % self.innerTocEnd, _data, re.MULTILINE):
+                if re.search(r"^%s\n%s" % (self.innerTocBegin, self.innerTocTitle), _data, re.MULTILINE) and re.search(r"^%s$" % self.innerTocEnd, _data, re.MULTILINE):
                     self._update_toc(_innerToc)
                 else:
                     self._add_toc(_outerToc)
@@ -139,11 +141,11 @@ class Toc:
                 with open(self.output, "w") as f:
                     f.write(data)
             except PermissionError:
-                print(f"Skipping write-protected file {self.output}", file=sys.stderr)
+                print(f'Skipping write-protected file "{self.output}"', file=sys.stderr)
                 self.err = "write"
         elif not self.updated:
             # data should never be empty if self.updated = False, but in case least we prevented cleaning the file
-            print(f"Skipping purging file {self.output}", file=sys.stderr)
+            print(f'Skipping purging file "{self.output}"', file=sys.stderr)
             self.updated = True
         # elif self.updated: we skipped replacing the same toc
 
@@ -153,45 +155,48 @@ class Toc:
         # check for begin-of-file directives and write output
         _data = self._check_directives(outerToc)
         self._write_toc(_data)
-        print(f"Adding toc to file {self.output}", file=sys.stderr)
+        print(f'Adding toc to file "{self.output}"', file=sys.stderr)
         self.updated = True
 
     def _check_directives(self, outerToc):
         # if a frontmatter, shebang or directive is found, append after first line(s)
         with open(self.input) as f:
             _data = f.read()
-            _firstLine = _data.split("\n", 1)[0]
-            match self.extension:
-                case "md":
-                    # multi line yaml, toml, js frontmatter for markdown
-                    if re.search(r"^---", _firstLine):
-                        _frontmatter = re.search(r"^---\n.*?\n---", _data, re.DOTALL).group(0)
-                    elif re.search(r"^\+\+\+", _firstLine):
-                        _frontmatter = re.search(r"^\+\+\+\n.*?\n\+\+\+", _data, re.DOTALL).group(0)
-                    elif re.search(r"^\{", _firstLine):
-                        _frontmatter = re.search(r"^\{\n.*?\n\}", _data, re.DOTALL).group(0)
-                    else:
-                        _frontmatter = None
-                    _firstLine = _frontmatter if _frontmatter else _firstLine
-                    _firstFewLines = _firstLine + "\n\n" + outerToc if _frontmatter else outerToc + "\n\n" + _firstLine
-                    # print(_frontmatter)
-                    # print(_firstFewLines)
-                case _:
-                    # single line shebang, xml, html, vim, emacs, perl pod
-                    if (re.search(r"^#!", _firstLine)
-                        or re.search(r"<\?xml", _firstLine, re.IGNORECASE)
-                        or re.search(r"<!doctype", _firstLine, re.IGNORECASE)
-                        or re.search(r"^" + re.escape(self.character) + r"\s+([Vv]im?|ex):", _firstLine)
-                        or re.search(r"^" + re.escape(self.character) + r"\s*-\*-", _firstLine)
-                        or re.search(r"^" + re.escape(self.character) + r"^=pod$", _firstLine)):
-                        # print("adding toc after shebang")
-                        _firstFewLines = _firstLine + "\n\n" + outerToc
-                    # else prepend as first line and put everything else after
-                    else:
-                        # print("adding toc before content")
-                        _firstFewLines = outerToc + "\n\n" + _firstLine
-            # print(_firstFewLines)
-            _data = re.sub(re.escape(_firstLine), _firstFewLines, _data)
+            _firstLine = _data.splitlines()[0]
+            if _firstLine == "":
+                # if _firstLine was be empty, re.sub would destroy the original file by inserting an outerToc between every character
+                _data = outerToc + "\n" + _data
+            else:
+                match self.extension:
+                    case "md":
+                        # multi line yaml, toml, js frontmatter for markdown
+                        if re.search(r"^---", _firstLine):
+                            _frontmatter = re.search(r"^---\n.*?\n---", _data, re.DOTALL).group(0)
+                        elif re.search(r"^\+\+\+", _firstLine):
+                            _frontmatter = re.search(r"^\+\+\+\n.*?\n\+\+\+", _data, re.DOTALL).group(0)
+                        elif re.search(r"^\{", _firstLine):
+                            _frontmatter = re.search(r"^\{\n.*?\n\}", _data, re.DOTALL).group(0)
+                        else:
+                            _frontmatter = None
+                        _firstLine = _frontmatter if _frontmatter else _firstLine
+                        _firstFewLines = _firstLine + "\n\n" + outerToc if _frontmatter else outerToc + "\n\n" + _firstLine
+                        # print(_frontmatter)
+                        # print(_firstFewLines)
+                    case _:
+                        # single line shebang, xml, html, vim, emacs, perl pod
+                        if (re.search(r"^#!", _firstLine)
+                            or re.search(r"<\?xml", _firstLine, re.IGNORECASE)
+                            or re.search(r"<!doctype", _firstLine, re.IGNORECASE)
+                            or re.search(r"^" + re.escape(self.character) + r"\s+([Vv]im?|ex):", _firstLine)
+                            or re.search(r"^" + re.escape(self.character) + r"\s*-\*-", _firstLine)
+                            or re.search(r"^" + re.escape(self.character) + r"^=pod$", _firstLine)):
+                            # print("adding toc after shebang")
+                            _firstFewLines = _firstLine + "\n\n" + outerToc
+                        # else prepend as first line and put everything else after
+                        else:
+                            # print("adding toc before content")
+                            _firstFewLines = outerToc + "\n\n" + _firstLine
+                _data = re.sub(re.escape(_firstLine), _firstFewLines, _data, count=1)
             return _data
 
 # #### UPDATE
@@ -201,7 +206,7 @@ class Toc:
         _data = self._replace_existing_toc(innerToc)
         self._write_toc(_data)
         if not self.updated:
-            print(f"Updating toc in file {self.output}", file=sys.stderr)
+            print(f'Updating toc in file "{self.output}"', file=sys.stderr)
             self.updated = True
 
     def _replace_existing_toc(self, innerToc):
@@ -214,12 +219,12 @@ class Toc:
                 self.err = "same"
                 _data = None
                 if not self.updated:
-                    print(f"Skipping replacing same toc in file {self.output}", file=sys.stderr)
+                    print(f'Skipping replacing same toc in file "{self.output}"', file=sys.stderr)
                     self.updated = True
             else:
                 # use non-greedy regex to only replace the smalles portion of text between innerTocBegin and innerTocEnd
                 # use count to only replace the first valid region in file
-                _data = re.sub(r"%s(.*?)%s" % (self.innerTocBegin, self.innerTocEnd), innerToc, _data, count=1, flags=re.DOTALL)
+                _data = re.sub(r"%s\n%s(.*?)%s" % (self.innerTocBegin, self.innerTocTitle, self.innerTocEnd), innerToc, _data, count=1, flags=re.DOTALL)
             return _data
 
 # ################ TOC GENERATION
@@ -257,10 +262,15 @@ class Toc:
         # begin the toc with the file name, truncating it if necessary
         _filename = self.input.split("/")[-1]
         _filename = (_filename[:46] + "...") if len(_filename) > 46 else _filename
-        _tocHeader = f"{self.character} ┌───────────────────────────────────────────────────────────────┐\n"
-        _tocHeader += f"{self.character} │ Contents of {_filename}{' ' * (50 - len(_filename))}│\n"
+        self.innerTocBegin = f"{self.character} ┌───────────────────────────────────────────────────────────────┐"
+        self.innerTocTitle = f"{self.character} │ Contents of {_filename}{' ' * (50 - len(_filename))}│"
+        # building the toc header
+        _tocHeader = self.innerTocBegin + "\n"
+        _tocHeader += self.innerTocTitle + "\n"
         _tocHeader += f"{self.character} ├───────────────────────────────────────────────────────────────┘\n"
         _tocHeader += f"{self.character} │"
+        # innerTocEnd not used here, but generated anyway as it used in re.search
+        self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
         return _tocPrefix, _tocHeader
 
 # ######## BODY
@@ -282,23 +292,23 @@ class Toc:
                         _newtoc = self._process_other(_lines)
                 _tocBody = self._prettify_connectors(_newtoc)
         except FileNotFoundError:
-            print(f"Skipping non-existing file {self.input}", file=sys.stderr)
+            print(f'Skipping non-existing file "{self.input}"', file=sys.stderr)
             _tocBody = ""
             self.err = "notfound"
         except PermissionError:
-            print(f"Skipping read-protected file {self.input}", file=sys.stderr)
+            print(f'Skipping read-protected file "{self.input}"', file=sys.stderr)
             _tocBody = ""
             self.err = "read"
         except IsADirectoryError:
-            print(f"Skipping directory {self.input}", file=sys.stderr)
+            print(f'Skipping directory "{self.input}"', file=sys.stderr)
             _tocBody = ""
             self.err = "directory"
         except UnicodeDecodeError:
-            print(f"Skipping binary file {self.input}", file=sys.stderr)
+            print(f'Skipping binary file "{self.input}"', file=sys.stderr)
             _tocBody = ""
             self.err = "binary"
         except BaseException:
-            print(f"Skipping file {self.input}", file=sys.stderr)
+            print(f'Skipping file "{self.input}"', file=sys.stderr)
             _tocBody = ""
             self.err = "unknown"
         finally:
