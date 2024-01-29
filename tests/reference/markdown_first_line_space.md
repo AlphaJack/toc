@@ -1,18 +1,14 @@
----
-layout: page
-title: frontmatter
----
-
 <!--
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of markdown_uptodate.md                              │
+// │ Contents of markdown_first_line_space.md                      │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├── Markdown with YAML frontmatter
+// ├── Markdown with empty first line
 // │
 // └───────────────────────────────────────────────────────────────
 -->
 
-# Markdown with YAML frontmatter
+ 
+# Markdown with empty first line
 
-A small toc should be placed between the end of the frontmatter and the first heading
+A small toc should be placed before first heading
