@@ -100,6 +100,3 @@ If you have a suggestion or you found a bug, you can use GitHub [issues](https:/
 
 See [CHANGELOG.md](./CHANGELOG.md)
 
-[^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
-[^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damage
-[^3]: The outdated toc to be replaced is defined as the the first match of a non-greedy regex

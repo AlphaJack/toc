@@ -59,7 +59,7 @@ class Toc:
     def set_character(self):
         # automatically select the comment type from its extension, if not already set
         match self.extension:
-            case "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "kt" | "md" | "pas" | "php" | "pp" | "proto" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
+            case "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "kt" | "md" | "pas" | "php" | "pp" | "proto" | "qmd" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
                 self.character = "//"
             case "ahk" | "asm" | "beancount" | "cl" | "clj" | "cljs" | "cljc" | "edn" | "fasl" | "ini" | "lisp" | "lsp" | "rkt" | "scm" | "ss":
                 self.character = ";"
@@ -251,7 +251,7 @@ class Toc:
         match self.extension:
             case "css":
                 _tocPrefix = "/*"
-            case "html" | "md" | "xml":
+            case "html" | "xml" | "md" | "qmd" | "rmd":
                 _tocPrefix = "<!--"
             case "ml" | "mli" | "scpd" | "scpt":
                 _tocPrefix = "(*"
@@ -319,16 +319,17 @@ class Toc:
     def _process_beancount(self, lines):
         # pars beancount files, reusing collapsible sections
         _oldtoc, _newtoc = [], []
+        _pattern = re.compile(r"^\*+ ")
         if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^\*+ .*$", line)]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
         else:
-            _oldtoc = [line for line in lines if re.search(r"^\*+ .*$", line)]
+            _oldtoc = [line for line in lines if re.search(_pattern, line)]
         _newtoc = [re.sub(r"^\*{6}", "\t│              └──", line.strip()) for line in _oldtoc]
         _newtoc = [re.sub(r"^\*{5}", "\t│           └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^\*{4}", "\t│        └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^\*{3}", "\t│     └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^\*{2}", "\t│  └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^\*", "\t├──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^\*{1}", "\t├──", line) for line in _newtoc]
         _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
         return _newtoc
 
@@ -337,16 +338,17 @@ class Toc:
     def _process_markdown(self, lines):
         # pars markdown files, reusing headings
         _oldtoc, _newtoc = [], []
+        _pattern = re.compile(r"^#+ ")
         if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^#+ ", line)] # [^#│├└┌]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
         else:
-            _oldtoc = [line for line in lines if re.search(r"^#+ ", line)] # [^#│├└┌]         # skip matching toc if "#" is used as character symbol of markdown
+            _oldtoc = [line for line in lines if re.search(_pattern, line)]
         _newtoc = [re.sub(r"^#{6}", "\t│              └──", line.strip()) for line in _oldtoc]
         _newtoc = [re.sub(r"^#{5}", "\t│           └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^#{4}", "\t│        └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^#{3}", "\t│     └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^#{2}", "\t│  └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^#", "\t├──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^#{1}", "\t├──", line) for line in _newtoc]
         _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
         return _newtoc
 
@@ -356,10 +358,11 @@ class Toc:
     def _process_pod(self, lines):
         # pars perl files, reusing headings
         _oldtoc, _newtoc = [], []
+        _pattern = re.compile(r"^=head\d ")
         if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(r"^=head\d .*$", line)]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
         else:
-            _oldtoc = [line for line in lines if re.search(r"^=head\d .*$", line)]
+            _oldtoc = [line for line in lines if re.search(_pattern, line)]
         _newtoc = [re.sub(r"^=head6", "\t│              └──", line.strip()) for line in _oldtoc]
         _newtoc = [re.sub(r"^=head5", "\t│           └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^=head4", "\t│        └──", line) for line in _newtoc]
@@ -374,15 +377,22 @@ class Toc:
     def _process_other(self, lines):
         # parse all other files types, according to the comment convention
         _oldtoc, _newtoc = [], []
+        _pattern = re.compile(r"^" + re.escape(self.character) + " (?:#{64}|#{32}|#{16}|#{8}|#{4}|#{2})")
+        # need to define _oldtoc here, otherwise it does not return the proper line number
         if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if line.startswith(self.character) and "####" in line]
+            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
         else:
-            _oldtoc = [line.strip() for line in lines if line.startswith(self.character) and "####" in line]
+            _oldtoc = [line.strip() for line in lines if re.search(_pattern, line)]
         _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################################################", "\n" + self.character + " ├──", line) for line in _oldtoc]
         _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################", "\n" + self.character + " │  └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################", "\n" + self.character + " │     └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^" + re.escape(self.character) + " ########", "\n" + self.character + " │        └──", line) for line in _newtoc]
         _newtoc = [re.sub(r"^" + re.escape(self.character) + " ####", "\n" + self.character + " │           └──", line) for line in _newtoc]
+        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ##", "\n" + self.character + " │              └──", line) for line in _newtoc]
+        match self.extension:
+            # https://support.posit.co/hc/en-us/articles/200484568-Code-Folding-and-Sections-in-the-RStudio-IDE
+            case "r" | "rpres":
+                _newtoc = [re.sub(r" [#-=]{4,}", "", line) for line in _newtoc]
         return _newtoc
 
 # #### PRETTIFY CONNECTORS
@@ -436,7 +446,7 @@ class Toc:
         match self.extension:
             case "css":
                 _tocSuffix = "*/"
-            case "html" | "md" | "xml":
+            case "html" | "xml" | "md" | "qmd" | "rmd":
                 _tocSuffix = "-->"
             case "ml" | "mli" | "scpd" | "scpt":
                 _tocSuffix = "*)"

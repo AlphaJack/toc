@@ -18,33 +18,50 @@
 // │     │  ├── Markdown
 // │     │  ├── Beancount
 // │     │  └── Perl
-// │     └──┐Wrap around comments needed
-// │        ├── CSS
-// │        ├── HTML
-// │        └── OCaml
+// │     ├──┐Wrap around comments needed
+// │     │  ├── CSS
+// │     │  ├── HTML and Quarto
+// │     │  └── OCaml
+// │     └──┐Compatibility with third-party editors
+// │        ├── Vim and Emacs
+// │        └── RStudio
+// ├── ################################################################ First section ----
+// ├── text 1
+// ├── ################################ Second section ####
+// ├── text 2
+// ├── ################################ Third section ====
 // │
 // └───────────────────────────────────────────────────────────────
 -->
 
 # Detailed TOC usage
 
-The scenarios below show different features.
+The scenarios below show different features of `toc`
+
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
 - [Detailed TOC usage](#detailed-toc-usage)
-   - [Read the table of contents](#read-the-table-of-contents)
-   - [Embed the table of contents in the original file](#embed-the-table-of-contents-in-the-original-file)
-   - [Set a custom comment character](#set-a-custom-comment-character)
-   - [Show line numbers](#show-line-numbers)
-   - [Process multiple files](#process-multiple-files)
-   - [Exceptional file types](#exceptional-file-types)
-      - [No comments needed](#no-comments-needed)
+   * [Read the table of contents](#read-the-table-of-contents)
+   * [Embed the table of contents in the original file](#embed-the-table-of-contents-in-the-original-file)
+   * [Process multiple files](#process-multiple-files)
+   * [Show line numbers](#show-line-numbers)
+   * [Set a custom comment character](#set-a-custom-comment-character)
+   * [Redirect output to another file](#redirect-output-to-another-file)
+   * [Other commands](#other-commands)
+   * [Exceptional file types](#exceptional-file-types)
+      + [No comments needed](#no-comments-needed)
          - [Markdown](#markdown)
          - [Beancount](#beancount)
          - [Perl](#perl)
-      - [Wrap around comments needed](#wrap-around-comments-needed)
+      + [Wrap around comments needed](#wrap-around-comments-needed)
          - [CSS](#css)
-         - [HTML](#html)
+         - [HTML and Quarto](#html-and-quarto)
          - [OCaml](#ocaml)
+      + [Compatibility with third-party editors](#compatibility-with-third-party-editors)
+         - [Vim and Emacs](#vim-and-emacs)
+         - [RStudio](#rstudio)
+
+<!-- TOC end -->
 
 ## Read the table of contents
 
@@ -79,7 +96,17 @@ let Section5 = "Write //, 4 hash characters and the name of section"
 If you run `toc example.js`, the program will output the following (stdout):
 
 ```js
-
+// ┌───────────────────────────────────────────────────────────────┐
+// │ Contents of example.js                                        │
+// ├───────────────────────────────────────────────────────────────┘
+// │
+// ├──┐Main section
+// │  └──┐Nested section
+// │     └──┐Nested section
+// │        └──┐Nested section
+// │           └── Nested section
+// │
+// └───────────────────────────────────────────────────────────────
 ```
 
 ## Embed the table of contents in the original file
@@ -252,7 +279,7 @@ If you feel brave enough, you can run `toc *` over your entire code base, as its
 
 For very long files, it may come in handy to run `toc -n example.js` to see the line number of each section, similar to the page numbers in the table of contents of a book:
 
-```
+```js
 // ┌───────────────────────────────────────────────────────────────┐
 // │ Contents of example.js                                        │
 // ├───────────────────────────────────────────────────────────────┘
@@ -303,10 +330,10 @@ For Markdown files, you don't need to write comments, just organize your section
 
 For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/examples/example.beancount) files, it's the same for Markdown, but you use `*` instead:
 
-```beancount
+```ini
 * Options
 
-; text
+; comment
 
 * Transactions
 ** FY2020
@@ -370,9 +397,9 @@ For CSS files, you have to wrap your `//` comments between `/*` and `*/`:
 
 </details>
 
-#### HTML
+#### HTML and Quarto
 
-For HTML files, you have to wrap your `//` comments between `<!--` and `-->`:
+For HTML and Quarto files, you have to wrap your `//` comments between `<!--` and `-->`:
 
 <details>
  <summary>Click to view `example.html`</summary>
@@ -418,3 +445,43 @@ let () = print_endline "Hello, World!"
 ```
 
 </details>
+
+
+### Compatibility with third-party editors
+
+#### Vim and Emacs
+
+If you place your Vim Modeline / Emacs mode as the first line, the toc will be appended after
+
+
+#### RStudio
+
+If you are using RStudio, you may want to end your comments with at least 4 `-`, `=` or `#`.
+This marks the comment as a foldable sections:
+
+<details>
+ <summary>Click to view `example.R`</summary>
+
+```r
+# ################################################################ Foldable section 1 ----
+
+print("Collapse me!")
+
+# ################################ Foldable section 2 ####
+
+print("Collapse me!")
+
+# ################################ Foldable section 3 ====
+
+print("Collapse me!")
+```
+
+</details>
+
+
+
+
+
+[^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
+[^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damage
+[^3]: The outdated toc to be replaced is defined as the the first match of a non-greedy regex
