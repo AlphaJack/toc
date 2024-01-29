@@ -16,10 +16,10 @@ name: Create GitHub release and deploy to PyPI from a new tag
 # requirements: PyPI API token
 
 # debug: 
-#   git push --delete origin v2.1.0 && git tag --delete v2.1.0
+#   git push --delete origin v1.1.0 && git tag --delete v1.1.0
 #   git -a && git commit --amend
 #   git push --force
-#   git tag v2.1.0 && git push --tags
+#   git tag v1.1.0 && git push --tags
 
 on:
 
