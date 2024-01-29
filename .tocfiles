@@ -1,0 +1,5 @@
+*.md
+toc/cli.py
+toc/toc.py
+tests/test*.py
+
