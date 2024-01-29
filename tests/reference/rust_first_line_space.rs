@@ -1,14 +1,16 @@
-<!--
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of markdown_first_line_space.md                      │
+// │ Contents of rust_first_line_space.rs                          │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├── Markdown with empty first line
+// ├── Rust with space in first line
 // │
 // └───────────────────────────────────────────────────────────────
--->
 
  
-# Markdown with empty first line
+// ################################################################ Rust with space in first line
 
-A small toc should be placed before first heading
+// A small toc should be placed before first heading
+
+fn main() {
+    println!("Hello, World!");
+}

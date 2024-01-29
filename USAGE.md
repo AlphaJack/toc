@@ -330,6 +330,9 @@ For Markdown files, you don't need to write comments, just organize your section
 
 For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/examples/example.beancount) files, it's the same for Markdown, but you use `*` instead:
 
+<details>
+ <summary>Click to view `example.beancount`</summary>
+
 ```ini
 * Options
 
@@ -338,8 +341,12 @@ For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/exa
 * Transactions
 ** FY2020
 
-; text
+2020-04-20 * "Food"
+ Assets:Bank                                          -20.00 EUR
+ Expenses:Groceries
 ```
+
+</details>
 
 #### Perl
 

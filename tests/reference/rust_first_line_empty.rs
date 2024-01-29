@@ -1,13 +1,16 @@
-<!--
 // ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of markdown_first_line_empty.md                      │
+// │ Contents of rust_first_line_empty.rs                          │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├── Markdown with empty first line
+// ├── Rust with empty first line
 // │
 // └───────────────────────────────────────────────────────────────
--->
 
-# Markdown with empty first line
 
-A small toc should be placed before first heading
+// ################################################################ Rust with empty first line
+
+// A small toc should be placed before first heading
+
+fn main() {
+    println!("Hello, World!");
+}
