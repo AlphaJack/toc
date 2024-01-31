@@ -23,7 +23,7 @@
 
 # accept arguments
 import argparse
-__version__ = "2.2.0"
+__version__ = "2.2.1"
 
 # heredoc in help epilog
 from argparse import RawDescriptionHelpFormatter

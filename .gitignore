@@ -5,6 +5,7 @@ dist
 .pytest_cache
 .benchmarks
 .coverage
+.prof
 tests/output/*
 htmlcov
 venv

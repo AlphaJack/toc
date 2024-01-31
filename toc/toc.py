@@ -19,10 +19,9 @@
 # │     └──┐TOC GENERATION
 # │        ├── HEADER
 # │        ├──┐BODY
-# │        │  ├── BEANCOUNT FILES
-# │        │  ├── MARKDOWN FILES
-# │        │  ├── POD FILES
-# │        │  ├── OTHER FILES
+# │        │  ├── BEANCOUNT AND MARKDOWN
+# │        │  ├── PERL
+# │        │  ├── OTHERS
 # │        │  └── PRETTIFY CONNECTORS
 # │        └── FOOTER
 # │
@@ -51,6 +50,14 @@ class Toc:
         self.innerTocBegin = None
         self.innerTocTitle = None
         self.innerTocEnd = None
+        self.levels = {
+            64: 1,
+            32: 2,
+            16: 3,
+            8: 4,
+            4: 5,
+            2: 6
+        }
 
 # ################################ PUBLIC METHODS
 
@@ -80,7 +87,7 @@ class Toc:
             case "bas" | "bat" | "cmd" | "com" | "sbl":
                 self.character = "REM"
             # https://stackoverflow.com/a/17665688
-            case "cob":
+            case "cbl" | "cob":
                 self.character = "      *>"
             case "f" | "for":
                 self.character = "C"
@@ -218,7 +225,7 @@ class Toc:
             if re.search(re.escape(innerToc), _data, re.MULTILINE):
                 self.err = "same"
                 _data = None
-                if not self.updated:
+                if not self.updated or self.output != self.input:
                     print(f'Skipping replacing same toc in file "{self.output}"', file=sys.stderr)
                     self.updated = True
             else:
@@ -235,13 +242,11 @@ class Toc:
         _tocBody = self._toc_body()
         _tocFooter, _tocSuffix = self._toc_footer()
         # exclude empty body
-        if _tocBody == "":
-            _innerToc = ""
-            _outerToc = ""
-        else:
-            _innerToc = _tocHeader + "\n" + _tocBody + "\n" + _tocFooter
-            # exclude prefix and suffix from innerToc, used for updating toc inline
-            _outerToc = _innerToc if _tocPrefix == "" else _tocPrefix + "\n" + _innerToc + "\n" + _tocSuffix
+        if not _tocBody:
+            return "", ""
+        _innerToc = "\n".join([_tocHeader, _tocBody, _tocFooter])
+        # exclude prefix and suffix from innerToc, used for updating toc inline
+        _outerToc = _innerToc if not _tocPrefix else "\n".join([_tocPrefix, _innerToc, _tocSuffix])
         return _innerToc, _outerToc
 
 # ######## HEADER
@@ -261,14 +266,18 @@ class Toc:
                 _tocPrefix = ""
         # begin the toc with the file name, truncating it if necessary
         _filename = self.input.split("/")[-1]
-        _filename = (_filename[:46] + "...") if len(_filename) > 46 else _filename
+        _truncated_filename = (_filename[:46] + "...") if len(_filename) > 46 else _filename
+        _padding = ' ' * (50 - len(_truncated_filename))
         self.innerTocBegin = f"{self.character} ┌───────────────────────────────────────────────────────────────┐"
-        self.innerTocTitle = f"{self.character} │ Contents of {_filename}{' ' * (50 - len(_filename))}│"
+        self.innerTocTitle = f"{self.character} │ Contents of {_truncated_filename}{_padding}│"
         # building the toc header
-        _tocHeader = self.innerTocBegin + "\n"
-        _tocHeader += self.innerTocTitle + "\n"
-        _tocHeader += f"{self.character} ├───────────────────────────────────────────────────────────────┘\n"
-        _tocHeader += f"{self.character} │"
+        _tocHeaderLines = [
+            self.innerTocBegin,
+            self.innerTocTitle,
+            f"{self.character} ├───────────────────────────────────────────────────────────────┘",
+            f"{self.character} │"
+        ]
+        _tocHeader = "\n".join(_tocHeaderLines)
         # innerTocEnd not used here, but generated anyway as it used in re.search
         self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
         return _tocPrefix, _tocHeader
@@ -278,16 +287,17 @@ class Toc:
     def _toc_body(self):
         # read file content and process it accordingly
         # display alert for common errors
+        _tocBody = ""
         try:
             with open(self.input, "r") as f:
                 _lines = f.readlines()
                 match self.extension:
                     case "beancount":
-                        _newtoc = self._process_beancount(_lines)
+                        _newtoc = self._process_increasing(_lines, "*")
                     case "md":
-                        _newtoc = self._process_markdown(_lines)
+                        _newtoc = self._process_increasing(_lines, "#")
                     case "pl" | "pm" | "pod":
-                        _newtoc = self._process_pod(_lines)
+                        _newtoc = self._process_perl(_lines)
                     case _:
                         _newtoc = self._process_other(_lines)
                 _tocBody = self._prettify_connectors(_newtoc)
@@ -307,90 +317,106 @@ class Toc:
             print(f'Skipping binary file "{self.input}"', file=sys.stderr)
             _tocBody = ""
             self.err = "binary"
-        except BaseException:
-            print(f'Skipping file "{self.input}"', file=sys.stderr)
-            _tocBody = ""
-            self.err = "unknown"
+        #except BaseException:
+        #    print(f'Skipping file "{self.input}"', file=sys.stderr)
+        #    _tocBody = ""
+        #    self.err = "unknown"
         finally:
             return _tocBody
 
-# #### BEANCOUNT FILES
+# #### BEANCOUNT AND MARKDOWN
 
-    def _process_beancount(self, lines):
-        # pars beancount files, reusing collapsible sections
-        _oldtoc, _newtoc = [], []
-        _pattern = re.compile(r"^\*+ ")
-        if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
-        else:
-            _oldtoc = [line for line in lines if re.search(_pattern, line)]
-        _newtoc = [re.sub(r"^\*{6}", "\t│              └──", line.strip()) for line in _oldtoc]
-        _newtoc = [re.sub(r"^\*{5}", "\t│           └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^\*{4}", "\t│        └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^\*{3}", "\t│     └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^\*{2}", "\t│  └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^\*{1}", "\t├──", line) for line in _newtoc]
-        _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
+    def _process_increasing(self, lines, heading):
+        # parse markdown and beancount files, reusing headings or sections
+        _newtoc = []
+        # ignore comments for other languages
+        _pattern = re.compile(r"^(" + re.escape(heading) + "+) (?!#)(.*)$")
+        # print(_pattern)
+
+        def replace_heading(match):
+            _heading_level = len(match.group(1))
+            _heading_text = f"{match.group(2)} {n+1}" if self.lineNumbers else match.group(2)
+            # 3 spaces per heading level
+            _indentation = "   " * (_heading_level - 2)
+            if _heading_level == 1:
+                _replacement = "\n" + self.character + " ├── " + _heading_text
+            else:
+                _replacement = "\n" + self.character + " │  " + _indentation + "└── " + _heading_text
+            return _replacement
+
+        for n, line in enumerate(lines):
+            if _pattern.match(line):
+                # strip line and replace comment with indentation
+                _newtoc.append(_pattern.sub(replace_heading, line.strip()))
+                # print(_newtoc)
         return _newtoc
 
-# #### MARKDOWN FILES
-
-    def _process_markdown(self, lines):
-        # pars markdown files, reusing headings
-        _oldtoc, _newtoc = [], []
-        _pattern = re.compile(r"^#+ ")
-        if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
-        else:
-            _oldtoc = [line for line in lines if re.search(_pattern, line)]
-        _newtoc = [re.sub(r"^#{6}", "\t│              └──", line.strip()) for line in _oldtoc]
-        _newtoc = [re.sub(r"^#{5}", "\t│           └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^#{4}", "\t│        └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^#{3}", "\t│     └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^#{2}", "\t│  └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^#{1}", "\t├──", line) for line in _newtoc]
-        _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
-        return _newtoc
-
-# #### POD FILES
+# #### PERL
 
     # https://perldoc.perl.org/perlpod
-    def _process_pod(self, lines):
-        # pars perl files, reusing headings
-        _oldtoc, _newtoc = [], []
-        _pattern = re.compile(r"^=head\d ")
-        if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
-        else:
-            _oldtoc = [line for line in lines if re.search(_pattern, line)]
-        _newtoc = [re.sub(r"^=head6", "\t│              └──", line.strip()) for line in _oldtoc]
-        _newtoc = [re.sub(r"^=head5", "\t│           └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^=head4", "\t│        └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^=head3", "\t│     └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^=head2", "\t│  └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^=head1", "\t├──", line) for line in _newtoc]
-        _newtoc = [line.replace("\t", f"\n{self.character} ") for line in _newtoc]
+    def _process_perl(self, lines):
+        # parse perl files, reusing headings
+        _newtoc = []
+        # difference compared to markdown
+        _pattern = re.compile(r"^=head(\d) (.*)$")
+
+        def replace_heading_perl(match):
+            # difference compared to markdown
+            _heading_level = int(match.group(1))
+            _heading_text = f"{match.group(2)} {n+1}" if self.lineNumbers else match.group(2)
+            # 3 spaces per heading level
+            _indentation = "   " * (_heading_level - 2)
+            if _heading_level == 1:
+                _replacement = "\n" + self.character + " ├── " + _heading_text
+            else:
+                _replacement = "\n" + self.character + " │  " + _indentation + "└── " + _heading_text
+            return _replacement
+
+        for n, line in enumerate(lines):
+            if _pattern.match(line):
+                _newtoc.append(_pattern.sub(replace_heading_perl, line.strip()))
+        # print(_newtoc)
         return _newtoc
 
-# #### OTHER FILES
+# #### OTHERS
 
     def _process_other(self, lines):
-        # parse all other files types, according to the comment convention
-        _oldtoc, _newtoc = [], []
-        _pattern = re.compile(r"^" + re.escape(self.character) + " (?:#{64}|#{32}|#{16}|#{8}|#{4}|#{2})")
-        # need to define _oldtoc here, otherwise it does not return the proper line number
-        if self.lineNumbers:
-            _oldtoc = [f"{line.strip()} {i+1}" for i, line in enumerate(lines) if re.search(_pattern, line)]
-        else:
-            _oldtoc = [line.strip() for line in lines if re.search(_pattern, line)]
-        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################################################", "\n" + self.character + " ├──", line) for line in _oldtoc]
-        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################################", "\n" + self.character + " │  └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ################", "\n" + self.character + " │     └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ########", "\n" + self.character + " │        └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ####", "\n" + self.character + " │           └──", line) for line in _newtoc]
-        _newtoc = [re.sub(r"^" + re.escape(self.character) + " ##", "\n" + self.character + " │              └──", line) for line in _newtoc]
+        _newtoc = []
+        # define regex pattern once, using groups to capture the count of '#'
+        _pattern = re.compile(rf"^{re.escape(self.character)} (#{{64}}|#{{32}}|#{{16}}|#{{8}}|#{{4}}|#{{2}}) (.*)$")
+        # print(_pattern)
+        # define a function to replace patterns with a new TOC line structure
+
+        def replace_heading_other(match):
+            _heading_level = self.levels[len(match.group(1))]
+            _heading_text = f"{match.group(2)} {n+1}" if self.lineNumbers else match.group(2)
+            # 3 spaces per heading level
+            _indentation = "   " * (_heading_level - 2)
+            # print(_heading_level)
+            # print(_heading_text)
+            if _heading_level == 1:
+                _replacement = "\n" + self.character + " ├── " + _heading_text
+            else:
+                _replacement = "\n" + self.character + " │  " + _indentation + "└── " + _heading_text
+            return _replacement
+
+        # cobol not being recognized
+        #match self.extension:
+        #    case "cbl" | "cob":
+        #        _oldtoc = [re.sub(r"^\*>", self.character, line) for line in _oldtoc]
+        for n, line in enumerate(lines):
+            if _pattern.match(line):
+                # print(line)
+                # special pre-processing for cobol
+                # match self.extension:
+                #    case "cbl" | "cob":
+                #        _newtoc.append(_pattern.sub(replace_heading_other, line))
+                #    case _:
+                #        _newtoc.append(_pattern.sub(replace_heading_other, line.strip()))
+                _newtoc.append(_pattern.sub(replace_heading_other, line.strip()))
+
+        # special post-processing for r
         match self.extension:
-            # https://support.posit.co/hc/en-us/articles/200484568-Code-Folding-and-Sections-in-the-RStudio-IDE
             case "r" | "rpres":
                 _newtoc = [re.sub(r" [#-=]{4,}", "", line) for line in _newtoc]
         return _newtoc
@@ -402,46 +428,49 @@ class Toc:
         _newtoc = "".join(newtoc)
         # split the input string into lines and reverse it
         _lines = _newtoc.split('\n')[::-1]
-        # initialize a large list of zeros
-        _flags = [0] * 1000
+        # use a dictionary for flags instead of a list
+        _flags = {}
         # iterate over the lines
         for index, line in enumerate(_lines):
+            # perform the regex search once and store the result
+            match = re.search("[└├]", line)
             # if the line contains either '└' or '├'
-            if re.search("[└├]", line):
+            if match:
                 # find the position of the match
-                i = re.search("[└├]", line).start()
+                i = match.start()
                 # if the flag at position i is set, replace the character at position i with '├'
-                if _flags[i] == 1:
+                if _flags.get(i, 0) == 1:
                     line = line[:i] + "├" + line[i + 1:]
                 # set the flag at position i
                 _flags[i] = 1
                 # Find the position of the nested children
                 j = i + 3
                 # if the flag at position j is set, replace the character at position j with '┐'
-                if _flags[j] == 1:
+                if _flags.get(j, 0) == 1:
                     line = line[:j] + "┐" + line[j + 1:]
                 # reset the flag at position j
-                _flags[j] = 0
-                # for all positions less than i
-                while i > 0:
-                    i -= 1
-                    # if the flag at position i is set, replace the character at position i with '│'
-                    if _flags[i] == 1:
-                        line = line[:i] + "│" + line[i + 1:]
-                # update the line in the list
-                _lines[index] = line
+            _flags[j] = 0
+            # for all positions less than i
+            for k in range(i - 1, -1, -1):
+                # if the flag at position k is set, replace the character at position k with '│'
+                if _flags.get(k, 0) == 1:
+                    line = line[:k] + "│" + line[k + 1:]
+            # update the line in the list
+            _lines[index] = line
         # reverse the lines and join them into a single string with newline characters
-        _tocBody = '\n'.join(_lines[::-1])
-        # print lines that are not empty
-        _tocBody = '\n'.join([line for line in _tocBody.split('\n') if line.strip() != ''])
+        _tocBody = '\n'.join(line for line in _lines[::-1] if line.strip() != '')
         return _tocBody
 
 # ######## FOOTER
 
     def _toc_footer(self):
         # end the toc with an horizontal line
-        _tocFooter = f"{self.character} │\n"
-        _tocFooter = _tocFooter + f"{self.character} └───────────────────────────────────────────────────────────────"
+        self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
+        _tocFooterLines = [
+            f"{self.character} │",
+            self.innerTocEnd,
+        ]
+        _tocFooter = "\n".join(_tocFooterLines)
         # print a multi-line comment delimiter if needed
         match self.extension:
             case "css":

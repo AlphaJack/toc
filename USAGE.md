@@ -25,11 +25,6 @@
 // │     └──┐Compatibility with third-party editors
 // │        ├── Vim and Emacs
 // │        └── RStudio
-// ├── ################################################################ First section ----
-// ├── text 1
-// ├── ################################ Second section ####
-// ├── text 2
-// ├── ################################ Third section ====
 // │
 // └───────────────────────────────────────────────────────────────
 -->
@@ -322,9 +317,9 @@ You can run `toc -h` for usage info and `toc -v` to read the current version
 
 For Markdown files, you don't need to write comments, just organize your sections with one or more `#`:
 
-   # Title
-   
-   ## Section
+    # Title
+       
+    ## Section
 
 #### Beancount
 
