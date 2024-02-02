@@ -27,6 +27,9 @@ import sys
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, project_root)
 
+# fake files
+from unittest.mock import patch, mock_open
+
 # module to test
 from toc.toc import Toc
 
@@ -67,6 +70,61 @@ class TestTocMethods(unittest.TestCase):
                 actual_character = t.set_character()
                 self.assertEqual(actual_character, expected_character, f'Unexpected comment character "{actual_character}" for file "{input_file}"')
 
+    def test_toc_prefix(self):
+        test_cases = [
+            ("css", ["/*"]),
+            ("ml", ["(*"]),
+            ("", []),
+        ]
+        for input_extension, expected_prefix in test_cases:
+            t = Toc("mock.txt")
+            with self.subTest(input_file=input_extension, expected_prefix=expected_prefix):
+                t.extension = input_extension
+                actual_prefix, actual_header = t._toc_header()
+                self.assertEqual(actual_prefix, expected_prefix, f'Unexpected comment character "{actual_prefix}" for extension "{input_extension}"')
+
+
+    def test_process_generic_1(self):
+        t = Toc("mock.txt")
+        lines = ["# ################################################################ Heading 1"]
+        expected = ["# ├── Heading 1"]
+        result = t._process_generic(lines)
+        self.assertEqual(result, expected)
+        
+    def test_process_generic_2n(self):
+        t = Toc("mock.beancount")
+        t.set_character()
+        lines = ["*** Transactions"]
+        expected = ["; │     └── Transactions"]
+        result = t._process_increasing(lines, "*")
+        self.assertEqual(result, expected)
+
+    def test_toc_suffix(self):
+        test_cases = [
+            ("c", []),
+            ("ml", ["*)"]),
+            ("", []),
+        ]
+        for input_extension, expected_suffix in test_cases:
+            t = Toc("mock.txt")
+            with self.subTest(input_file=input_extension, expected_suffix=expected_suffix):
+                t.extension = input_extension
+                actual_footer, actual_suffix = t._toc_footer()
+                self.assertEqual(actual_suffix, expected_suffix, f'Unexpected comment character "{actual_suffix}" for extension "{input_extension}"')
+
+    def test_prettify_connectors(self):
+        t = Toc("mock.txt")
+        input_list = ['# ├── MODULES', '# ├── CLASS', '# │  └── PUBLIC METHODS', '# │     └── COMMENT CHARACTER', '# │     └── TOC OUTPUT', '# │        └── STDOUT', '# │        └── FILE', '# │  └── INTERNAL METHODS', '# │     └── TOC OUTPUT', '# │        └── FILE', '# │           └── ADD', '# │           └── UPDATE', '# │     └── TOC GENERATION', '# │        └── HEADER', '# │        └── BODY', '# │           └── BEANCOUNT AND MARKDOWN', '# │           └── PERL', '# │           └── GENERIC', '# │           └── PRETTIFY CONNECTORS', '# │        └── FOOTER', '# │     └── TOC INPUT']
+        expected_list = ['# ├── MODULES', '# ├──┐CLASS', '# │  ├──┐PUBLIC METHODS', '# │  │  ├── COMMENT CHARACTER', '# │  │  └──┐TOC OUTPUT', '# │  │     ├── STDOUT', '# │  │     └── FILE', '# │  └──┐INTERNAL METHODS', '# │     ├──┐TOC OUTPUT', '# │     │  └──┐FILE', '# │     │     ├── ADD', '# │     │     └── UPDATE', '# │     ├──┐TOC GENERATION', '# │     │  ├── HEADER', '# │     │  ├──┐BODY', '# │     │  │  ├── BEANCOUNT AND MARKDOWN', '# │     │  │  ├── PERL', '# │     │  │  ├── GENERIC', '# │     │  │  └── PRETTIFY CONNECTORS', '# │     │  └── FOOTER', '# │     └── TOC INPUT']
+        output_list = t._prettify_connectors(input_list)
+        self.assertEqual(output_list, expected_list)
+
+    def test_read_file(self):
+        with patch("builtins.open", side_effect=UnicodeDecodeError("utf-8", b"", 1, 2, "mock reason")):
+            t = Toc("mock.txt")
+            data = t._read_file()
+            self.assertEqual(data, "")
+            self.assertEqual(t.err, "binary")
 
 # ################################ FILE PROCESSING
 

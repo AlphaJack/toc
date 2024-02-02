@@ -4,26 +4,22 @@
 # │ Contents of cli.py                                            │
 # ├───────────────────────────────────────────────────────────────┘
 # │
-# ├── LIBRARIES
+# ├── MODULES
 # ├──┐FUNCTIONS
-# │  └── ARGUMENTS
-# ├──┐First level
-# │  ├──┐Second level
-# │  │  └──┐Third level
-# │  │     └──┐Fourth level
-# │  │        └── Fifth level
+# │  ├── ARGUMENTS
+# │  ├── PROCESS FILE
 # │  └── MAIN
 # ├── ENTRY POINT
 # │
 # └───────────────────────────────────────────────────────────────
 
 
-# ################################################################ LIBRARIES
+# ################################################################ MODULES
 
 
 # accept arguments
 import argparse
-__version__ = "2.2.1"
+__version__ = "2.2.0"
 
 # heredoc in help epilog
 from argparse import RawDescriptionHelpFormatter
@@ -47,14 +43,15 @@ except ImportError:
 
 def parse_args():
     # read user-provided comment type
-    example_usage = """
+    character = "#"
+    example_usage = f"""
 example comments:
 
-# ################################################################ First level
-# ################################ Second level
-# ################ Third level
-# ######## Fourth level
-# #### Fifth level
+{character} ################################################################ First level
+{character} ################################ Second level
+{character} ################ Third level
+{character} ######## Fourth level
+{character} #### Fifth level
 """
     parser = argparse.ArgumentParser(
         prog="toc",
@@ -72,45 +69,56 @@ example comments:
     args = parser.parse_args()
     return args
 
+
+def get_files(args):
+    # consider all files as lists
+    if args.from_list:
+        files = []
+        for fileList in args.files:
+            try:
+                with open(fileList, "r") as list_content:
+                    for line in list_content.read().splitlines():
+                        if not line.startswith("#"):
+                            # glob expansion
+                            files += [globMatch for globMatch in glob.glob(line, recursive=True)]
+            # cannot open that list
+            except BaseException:
+                print(f'Skipping list "{fileList}"', file=sys.stderr)
+    # only consider the first file
+    elif args.output_file:
+        files = [args.files[0]]
+    # consider all files
+    else:
+        files = args.files
+    return files
+
+# ################################ PROCESS FILE
+
+
+def process_file(file, args):
+    # initialize instance
+    t = Toc(file)
+    # set comment character and line numbers
+    t.character = args.character if args.character else t.set_character()
+    t.lineNumbers = args.line_numbers if args.line_numbers else False
+    t.output = args.output_file if args.output_file else None
+    # print output
+    if args.to_file or args.output_file:
+        t.to_file()
+    else:
+        t.to_stdout()
+
 # ################################ MAIN
 
 
 def main():
     # parse arguments
     args = parse_args()
-    # consider all files as lists
-    if args.from_list:
-        files = []
-        for list in args.files:
-            try:
-                with open(list, "r") as list_content:
-                    for line in list_content.read().splitlines():
-                        if not line.startswith("#"):
-                            files += [globMatch for globMatch in glob.glob(line, recursive=True)]
-            # cannot open that list
-            except BaseException:
-                print(f'Skipping list "{list}"', file=sys.stderr)
-    # only keep the first file
-    elif args.output_file:
-        files = [args.files[0]]
-    # consider all files
-    else:
-        files = args.files
+    files = get_files(args)
     # process all files individually
-    if len(files) > 0:
-        for file in files:
-            # initialize instance
-            t = Toc(file)
-            # set comment character and line numbers
-            t.character = args.character if args.character else t.set_character()
-            t.lineNumbers = args.line_numbers if args.line_numbers else False
-            t.output = args.output_file if args.output_file else None
-            # print output
-            if args.to_file or args.output_file:
-                t.to_file()
-            else:
-                t.to_stdout()
-    else:
+    for file in files:
+        process_file(file, args)
+    if not files:
         print("No files provided", file=sys.stderr)
 
 
