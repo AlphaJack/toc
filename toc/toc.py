@@ -378,49 +378,68 @@ class Toc:
 # #### PRETTIFY CONNECTORS
 
     def _prettify_connectors(self, newtoc):
-        # add other unicode symbols to prettify the tree structure
-        # process the list in reverse order to "┐"
+        # add other unicode box drawing symbols to prettify the tree structure
         # "┐" is added to every comment except the last one. to calculate its position, we need to reverse the list
         # "├" replaces "└" for every siblings at the same level, except the last one
         # "│" is added to connect lower siblings to upper siblings with children. to avoid adding it multiple times at every line, we need to reverse the list
-        # print(newtoc)
         if newtoc:
-            # reverse toc lines
-            _lines = newtoc[::-1]
-            # use a dictionary for flags
+            # process the list in reverse order, as we
+            _headings = newtoc[::-1]
+            # for each line store: int_position_of_match: bool_flag (see below for explanation)
+            # int_position_of_match is 3x the heading level
             _flags = {}
-            for index, line in enumerate(_lines):
+            _pattern = re.compile(r"[└├]")
+            for index, heading in enumerate(_headings):
                 # "├": first level, "└": other levels
-                match = re.search("[└├]", line)
-                if match:
-                    # save the position of the match
-                    i = match.start()
-                    # if the flag at position i is set, replace the character at position i with '├'
-                    if _flags.get(i, 0) == 1:
-                        # print("Adding '├' to ", line)
-                        line = line[:i] + "├" + line[i + 1:]
-                    # set the flag at position i
-                    _flags[i] = 1
-                    # find the position of the nested children
-                    j = i + 3
-                    # if the flag at position j is set, replace the character at position j with '┐'
-                    if _flags.get(j, 0) == 1:
-                        # print("Adding '┐' to ", line)
-                        line = line[:j] + "┐" + line[j + 1:]
-                    # reset the flag at position j
-                _flags[j] = 0
-                # for all positions less than i
-                for k in range(i - 1, -1, -1):
-                    # if the flag at position k is set, replace the character at position k with '│'
-                    if _flags.get(k, 0) == 1:
-                        # print("Adding '│' to ", line)
-                        line = line[:k] + "│" + line[k + 1:]
-                # update the line in the list
-                _lines[index] = line
-            # reverse before returning
-            _tocBody = _lines[::-1]
-            # print(_tocBody)
-            return _tocBody
+                # print("Original line:  ", heading)
+                # save the position of the match
+                i = re.search(_pattern, heading).start()
+                # for the first heading of each level do nothing, as it is the last sibling of that level
+                # if current level is true, it means this heading is not the last sibling, therefore add "├" to connect to siblings below
+                if _flags.get(i, False):
+                    heading = heading[:i] + "├" + heading[i + 1:]
+                    # print('Line after "├": ', heading)
+                    # print('Dict after "├": ', dict(sorted(_flags.items())))
+                # print(" ")
+                # flag the current level to True, to indicate we are still operating at this level
+                _flags[i] = True
+                # set position of the child level
+                c = i + 3
+                # if child level is True, it means that now we are operating at a level with children,
+                # therefore add "┐" to connect to the first child
+                # this c flag is set to True with _flags[i] = True if we descended again to the child level, e.g. BEGIN H END
+                # print(_flags)
+                if _flags.get(c, False):
+                    heading = heading[:c] + "┐" + heading[c + 1:]
+                    # print('Line after "┐": ', heading)
+                # print('Dict after "┐": ', dict(sorted(_flags.items())))
+                # print(" ")
+                # set eventual child level to False, because if it was True we just connected to the first child with "┐",
+                # and if it was False a previous sibling connected to the first child
+                _flags[c] = False
+                # the following code section is not triggered for simple "stairs" table of contents, e.g. BEGIN H1, H2, H3, H3, H4 END
+                # however, if we have a higher heading level after a lower one, e.g. BEGIN H1, H2, H3, H2 END
+                # in the example above, the second H2 should be vertically connected with "│" to the first H2
+                # this affects H3, which should also be added a "│", and it also affects the first H2, which should replace its "└" with "├"
+                # for H3, this is done now, for the first H2, it is done via flag the next iteration of 'for index, heading in enumerate(_lines)'
+                # in BEGIN H1, H2, H3, H4, H2 END, H3 is modified once, but H4 is modified with two parallel "│"
+                # start from the character (17) before the current level (18), then go back right-to-left
+                for p in range(i - 1, -1, -1):
+                    # if a parent level (15) is True, it means that we should vertically connect that level with "│"
+                    if _flags.get(p, False):
+                        # print("Adding '│' to ", heading)
+                        heading = heading[:p] + "│" + heading[p + 1:]
+                        # print('Line after "│": ', heading)
+                        # print('Dict after "│": ', dict(sorted(_flags.items())))
+                # print(" ")
+                # replace the original heading with the modified one
+                _headings[index] = heading
+                # reverse before returning
+            _tocBody = _headings[::-1]
+        else:
+            _tocBody = []
+        # print(_tocBody)
+        return _tocBody
 
 # ######## FOOTER
 
