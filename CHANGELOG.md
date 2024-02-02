@@ -4,6 +4,12 @@
 // ├───────────────────────────────────────────────────────────────┘
 // │
 // ├──┐Changelog - toc
+// │  ├──┐[2.3.0] - 2024-02-02
+// │  │  ├── Added
+// │  │  ├── Documentation
+// │  │  ├── Fixed
+// │  │  ├── Performance
+// │  │  └── Testing
 // │  ├──┐[2.2.0] - 2024-01-29
 // │  │  ├── Added
 // │  │  ├── Documentation
@@ -19,6 +25,37 @@
 -->
 
 # Changelog - toc
+
+## [2.3.0] - 2024-02-02
+### Added
+
+- If `-o outputFile` is specified, toc will write there even if the inputFile's toc is already up-to-date
+- Support for rstudio foldable sections
+
+### Documentation
+
+- Added useful tools to CONTRIBUTING.md
+- Explaining better what _prettify_connector() does
+
+### Fixed
+
+- Not stripping lines to preserve cobol indentation
+- Avoiding printing twice the same error or warning message
+
+### Performance
+
+- Drastic performance improvements by reducing regex replacements, loops, and list comprehensions
+- Simplified and explained _prettify_connectors()
+- Unified comment replacement in _replace_comment()
+- Defining toc multiline regex pattern once
+- Centralized file opening function
+- Storing toc pieces in lists until _generate_toc()
+
+### Testing
+
+- Added complex toc nexting
+- Added more unit tests to toc.py
+- Added check for missing reference file
 
 ## [2.2.0] - 2024-01-29
 ### Added
@@ -42,7 +79,7 @@
 - Limiting re.sub to 1 also if toc needs to be added
 - Avoid re.sub if first line is empty
 - Sanitizing input file type to str
-- Fixed a bug that may lead to multiple tocs being added
+- Fixed a bug thay may lead to multiple tocs being added
 
 ### Testing
 

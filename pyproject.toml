@@ -19,7 +19,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tableofcontents"
-version = "2.2.0"
+version = "2.3.0"
 authors = [
   { name="AlphaJack" },
 ]
@@ -65,7 +65,7 @@ ignore_tags = "rc"
 sort_commits = "newest"
 commit_parsers = [
     { message = "^(feat|[Aa]dd)", group = "Added" },
-    { message = "^[Aa]dd", group = "Added" },
+    { message = "^perf", group = "Performance" },
     { message = "^change", group = "Changed" },
     { message = "^[Dd]oc", group = "Documentation" },
     { message = "^deprecat", group = "Deprecated" },
