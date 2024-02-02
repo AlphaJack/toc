@@ -95,13 +95,13 @@ def get_files(args):
 # ################################ PROCESS FILE
 
 
-def process_file(file, args):
+def process_file(inputFile, args):
     # initialize instance
-    t = Toc(file)
+    t = Toc(inputFile)
     # set comment character and line numbers
     t.character = args.character if args.character else t.set_character()
     t.lineNumbers = args.line_numbers if args.line_numbers else False
-    t.output = args.output_file if args.output_file else None
+    t.outputFile = args.output_file if args.output_file else None
     # print output
     if args.to_file or args.output_file:
         t.to_file()
@@ -116,8 +116,8 @@ def main():
     args = parse_args()
     files = get_files(args)
     # process all files individually
-    for file in files:
-        process_file(file, args)
+    for inputFile in files:
+        process_file(inputFile, args)
     if not files:
         print("No files provided", file=sys.stderr)
 
