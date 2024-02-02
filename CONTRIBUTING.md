@@ -7,9 +7,8 @@
 // │  ├──┐Test
 // │  │  └── Test coverage
 // │  └──┐Performance
+// │     ├── 
 // │     ├── Function level
-// ├── to generate a 10MB file
-// ├── to cleanup
 // │     ├── Line level
 // │     └── Memory allocation
 // │
@@ -32,14 +31,28 @@ firefox "htmlcov/index.html"
 
 ## Performance
 
-### Function level
+### 
+
+To generate a single large file:
 
 ```bash
-# to generate a 10MB file
-for i in {1..312500}; do echo "# ################ Test Heading" >> "tests/output/longfile.txt"; done
-# to cleanup
-rm "tests/output/longfile.txt"
+for i in {1..10000}; do printf "# ################ Test Heading $i\n" >> "tests/output/longfile.txt"; done
 ```
+
+To generate multiple small files:
+
+```bash
+mkdir -p "tests/output/multi"
+rm -f "tests/output/multi/_list.txt"
+for i in {1..10000}; do
+ printf "# ################ Test Heading $i\n" > "tests/output/multi/$i.txt"
+ printf "tests/output/multi/$i.txt\n" >> "tests/output/multi/_list.txt"
+done
+```
+
+
+### Function level
+
 
 ```bash
 python -m cProfile -o "tests/output/prof_cprofile.prof" toc/cli.py # normal toc flags

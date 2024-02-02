@@ -165,7 +165,7 @@ class TestTocFiles(unittest.TestCase):
                     output_content, reference_content = output.read(), reference.read()
                     comparison = True if output_content == reference_content else False
                     with self.subTest(comparison=comparison):
-                        self.assertTrue(comparison, f'Unexpected content (should be different) processing "{file.name}", please check "{output_file}"')
+                        self.assertTrue(comparison, f'Unexpected content (should be different) processing "{file.name}", please run `diff {output_file} {reference_file}`')
             elif output_file.is_file():
                 comparison = False
                 with self.subTest(comparison=comparison):
@@ -173,11 +173,12 @@ class TestTocFiles(unittest.TestCase):
             elif reference_file.is_file():
                 comparison = False
                 with self.subTest(comparison=comparison):
-                    self.assertTrue(comparison, f'Unexpected empty output (should be something) processing "{file.name}", please check "{output_file}"')
+                    self.assertTrue(comparison, f'Unexpected empty output (should be something) processing "{file.name}"')
             else:
                 comparison = True
                 with self.subTest(comparison=comparison):
-                    self.assertTrue(comparison, f'Expected empty output (ok) processing "{file.name}"')
+                    # expected empty output
+                    self.assertTrue(comparison)
 
     # @classmethod
     # def tearDownClass(cls):
