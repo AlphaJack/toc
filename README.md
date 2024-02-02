@@ -45,15 +45,16 @@ Second, you run `toc` on that file to turn those comments into a table of conten
 Comments are structured in this way:
 
 ```c
-┌ comment character ("#", "//", "%", ";", "--", etc. according to the language)
+┌ comment character ("#", "//", "%", ";", "--", etc., according to the file language)
 │
-│       nesting level ("#" repeated 64, 32, 16, 8 or 4 times)      section name
+│      nesting level ("#" repeated 64, 32, 16, 8, 4 or 2 times)    section name
 │  ┌──────────────────────────────┴───────────────────────────────┐ ┌────┴────┐
 // ################################################################ First level
 // ################################ Second level
 // ################ Third level
 // ######## Fourth level
 // #### Fifth level
+// ## Sixth level
 ```
 
 By running `toc file.c`, you will read the table of contents of that file
@@ -67,7 +68,8 @@ By running `toc file.c`, you will read the table of contents of that file
 // │  └──┐Second level
 // │     └──┐Third level
 // │        └──┐Fourth level
-// │           └── Fifth level
+// │           └──┐Fifth level
+// │              └── Sixth level
 // │
 // └───────────────────────────────────────────────────────────────
 ```
@@ -94,7 +96,7 @@ See <https://regex101.com/r/ngzZXN/1> for examples of valid and invalid comments
 
 ## How can I contribute?
 
-If you have a suggestion or you found a bug, you can use GitHub [issues](https://github.com/AlphaJack/toc/issues) and [pull requests](https://github.com/AlphaJack/toc/pulls) to contribute. 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) 
 
 ## What has changed from previous versions?
 
