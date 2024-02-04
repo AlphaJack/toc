@@ -149,7 +149,7 @@ class TestTocFiles(unittest.TestCase):
     def test_input_files(self):
         # process each file in the input_dir
         for file in Path.iterdir(self.input_dir):
-            print(f"\nProcessing {file.name}")
+            #print(f"\nProcessing {file.name}")
             input_file = self.input_dir / file.name
             output_file = self.output_dir / file.name
             reference_file = self.reference_dir / file.name
@@ -191,5 +191,5 @@ class TestTocFiles(unittest.TestCase):
 # ################################################################ ENTRYPOINT
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(buffer=True)
 

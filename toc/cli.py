@@ -114,6 +114,7 @@ def process_file(inputFile, args):
 
 def main():
     # parse arguments
+    #print(sys.argv)
     args = parse_args()
     files = get_files(args)
     # process all files individually
