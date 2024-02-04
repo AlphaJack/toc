@@ -15,11 +15,15 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.dynamic]
+# read version from __init__.py
+version = {attr = "toc.__version__"}
+
 # ################################################################ Project
 
 [project]
 name = "tableofcontents"
-version = "2.3.0"
+dynamic = ["version"]
 authors = [
   { name="AlphaJack" },
 ]

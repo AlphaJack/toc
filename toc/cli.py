@@ -19,7 +19,7 @@
 
 # accept arguments
 import argparse
-__version__ = "2.3.0"
+
 
 # heredoc in help epilog
 from argparse import RawDescriptionHelpFormatter
@@ -30,12 +30,13 @@ import sys
 # glob expansion
 import glob
 
-# toc (dist vs dev)
+# toc (installed system vs local development)
 try:
     from toc.toc import Toc
+    from toc.__version__ import __version__
 except ImportError:
     from toc import Toc
-
+    from __version__ import __version__
 
 # ################################################################ FUNCTIONS
 # ################################ ARGUMENTS

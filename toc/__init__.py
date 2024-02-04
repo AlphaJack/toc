@@ -1,3 +1,3 @@
 #!/usr/bin/env python
 
-__version__ = "2.3.0"
+from .__version__ import __version__
