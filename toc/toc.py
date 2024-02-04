@@ -108,7 +108,7 @@ class Toc:
         _, _outerToc = self._generate_toc()
         if _outerToc == "":
             # skip error if we already set self.err
-            print(f'Skipping empty "{self.character}" toc for "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'No "{self.character}" toc for "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
             print(_outerToc)
@@ -131,14 +131,14 @@ class Toc:
     def _add_or_update(self):
         # if the file does not contain a toc, add it, otherwise update it
         _innerToc, _outerToc = self._generate_toc()
-        _data = self._read_file()
         if _outerToc == "":
-            print(f'Skipping empty "{self.character}" toc for "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Skipping writing empty "{self.character}" toc to "{self.outputFile}"', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
             # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
             self.pattern = re.compile(rf"{self.innerTocBegin}\n{self.innerTocTitle}(.*?){self.innerTocEnd}", re.DOTALL)
             # print(self.pattern)
+            _data = self._read_file()
             # print(_data)
             if re.search(self.pattern, _data):
                 self._update_toc(_innerToc)
@@ -379,13 +379,13 @@ class Toc:
 
     def _prettify_connectors(self, newtoc):
         # add other unicode box drawing symbols to prettify the tree structure
-        # "┐" is added to every comment except the last one. to calculate its position, we need to reverse the list
+        # "┐" is added to every heading except the last one. to calculate its position
         # "├" replaces "└" for every siblings at the same level, except the last one
         # "│" is added to connect lower siblings to upper siblings with children. to avoid adding it multiple times at every line, we need to reverse the list
         if newtoc:
             # process the list in reverse order, as we
             _headings = newtoc[::-1]
-            # for each line store: int_position_of_match: bool_flag (see below for explanation)
+            # for each line store: int_position_of_match: bool_parent_has_not_yet_been_encountered
             # int_position_of_match is 3x the heading level
             _flags = {}
             _pattern = re.compile(r"[└├]")
@@ -407,7 +407,7 @@ class Toc:
                 c = i + 3
                 # if child level is True, it means that now we are operating at a level with children,
                 # therefore add "┐" to connect to the first child
-                # this c flag is set to True with _flags[i] = True if we descended again to the child level, e.g. BEGIN H END
+                # this c flag is set to True with _flags[i] = True if we descended again to the child level, e.g. BEGIN H1 H2 H3 H2 H3 END
                 # print(_flags)
                 if _flags.get(c, False):
                     heading = heading[:c] + "┐" + heading[c + 1:]
@@ -423,8 +423,8 @@ class Toc:
                 # this affects H3, which should also be added a "│", and it also affects the first H2, which should replace its "└" with "├"
                 # for H3, this is done now, for the first H2, it is done via flag the next iteration of 'for index, heading in enumerate(_lines)'
                 # in BEGIN H1, H2, H3, H4, H2 END, H3 is modified once, but H4 is modified with two parallel "│"
-                # start from the character (17) before the current level (18), then go back right-to-left
-                for p in range(i - 1, -1, -1):
+                # start from the parent level, then go back right-to-left at intervals of 3, until position 4
+                for p in range(i - 3, 4, -3):
                     # if a parent level (15) is True, it means that we should vertically connect that level with "│"
                     if _flags.get(p, False):
                         # print("Adding '│' to ", heading)
