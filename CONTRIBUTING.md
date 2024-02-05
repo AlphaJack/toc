@@ -9,7 +9,9 @@
 // │     └──┐Tools
 // │        ├── Linting
 // │        ├── Test coverage
-// │        ├── Benchmarks
+// │        ├──┐Benchmarks
+// │        │  ├── Large files
+// │        │  └── Multiple files
 // │        └── Profiling
 // ├── install qcachegrind
 // │
@@ -62,14 +64,35 @@ firefox "htmlcov/index.html"
 
 Running the code against a heavy workload amplifies the effect of unoptimized sections in profiling operations.
 
-To generate a single 13MB file (use `toc/cli.py tests/output/longfile.txt`):
+##### Large files
+
+To generate a single large file (use `toc/cli.py tests/output/longfile.txt`):
 
 ```bash
 rm -f tests/output/longfile.txt
 for i in {1..100000}; do
- printf "# ################################################################ Test H1 $i\n# ################################ Test H2 $i\n" >> tests/output/longfile.txt
+ {
+  printf "# ################################################################ Test H1 $i\n"
+  printf "# ################################ Test H2 $i\n"
+ } >> tests/output/longfile.txt
 done
 ```
+
+More complex toc:
+
+```bash
+rm -f tests/output/longfile-complex.txt
+for i in {1..100000}; do
+ {
+  printf "# ################################################################ Test H1 $i\n"
+  printf "# ################################ Test H2 $i\n"
+  printf "# ################ Test H3 $i\n"
+  printf "# ################ Test H3 $i\n"
+  printf "# ################################ Test H2 $i\n"
+ } >> tests/output/longfile-complex.txt
+done
+```
+##### Multiple files
 
 To generate multiple small files (use `toc/cli.py -l tests/output/multi/_list.txt`):
 
@@ -77,8 +100,30 @@ To generate multiple small files (use `toc/cli.py -l tests/output/multi/_list.tx
 mkdir -p tests/output/multi
 rm -f tests/output/multi/_list.txt
 for i in {1..10000}; do
- printf "# ################ Test Heading $i\n" > $file
- printf "tests/output/multi/$i.txt\n" >> tests/output/multi/_list.txt
+ file=tests/output/multi/$i.txt
+ {
+  printf "# ################################################################ Test H1 $i\n"
+  printf "# ################################ Test H2 $i\n"
+ } > $file
+ printf "$file\n" >> tests/output/multi/_list.txt
+done
+```
+
+More complex toc:
+
+```bash
+mkdir -p tests/output/multi
+rm -f tests/output/multi/_list-complex.txt
+for i in {1..10000}; do
+ file=tests/output/multi/$i-complex.txt
+ {
+  printf "# ################################################################ Test H1 $i\n"
+  printf "# ################################ Test H2 $i\n"
+  printf "# ################ Test H3 $i\n"
+  printf "# ################ Test H3 $i\n"
+  printf "# ################################ Test H2 $i\n"
+ } > $file
+ printf "$file\n" >> tests/output/multi/_list-complex.txt
 done
 ```
 
