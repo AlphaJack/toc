@@ -35,6 +35,7 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, project_root)
 
 # module to test
+#from toc.toc import Toc
 from toc.toc import Toc
 from toc.cli import *
 #from toc.__version__ import __version__
@@ -64,7 +65,7 @@ class TestCli(unittest.TestCase):
         # project folder
         cls.p = cls.t.parent
         cls.i = cls.t / "input"
-        #cls.o = cls.t / "output"
+        cls.o = cls.t / "output"
 
     def test_no_args(self):
         test_args = [f"{self.p / 'toc' / 'cli.py'}"]
@@ -72,11 +73,11 @@ class TestCli(unittest.TestCase):
             output = StringIO()
             with redirect_stderr(output):
                 main()
-                print("output: '" + output.getvalue().strip() + "'")
+                # print("output: '" + output.getvalue().strip() + "'")
                 self.assertEqual("No files provided\n", output.getvalue())
 
     # returns SystemExit: 0 from argparse module with "-v"
-    #def test_version(self):
+    # def test_version(self):
     #    test_args = ["toc/cli.py", "-v"]
     #    with patch.object(sys, "argv", test_args):
     #        output = StringIO()
@@ -92,7 +93,7 @@ class TestCli(unittest.TestCase):
             output = StringIO()
             with redirect_stderr(output):
                 main()
-                #print("output: '" + output.getvalue().strip() + "'")
+                # print("output: '" + output.getvalue().strip() + "'")
                 self.assertIn('No "//" toc for "', output.getvalue())
 
     def test_list(self):
@@ -101,57 +102,35 @@ class TestCli(unittest.TestCase):
             output = StringIO()
             with redirect_stdout(output):
                 main()
-                #print("output: '" + output.getvalue() + "'")
-                self.assertIn("Contents of README.md", output.getvalue())
+                # print("output: '" + output.getvalue() + "'")
+                self.assertTrue("Contents of README.md" in output.getvalue() and "Contents of USAGE.md" in output.getvalue())
 
+    def test_stdin(self):
+        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-e", "html", "-"]
+        stdin_content = """
+<html>
+<html>
+<h1>Title</h1>
+<h2>Subtitle</h2>
+</html>
 """
-    #@patch('builtins.open', new_callable=mock_open, read_data="test\n")
-    @patch('toc.cli.parse_args')
-    @patch('toc.toc.Toc')
-    #def test_main(self, mock_toc, mock_args, mock_files):
-    def test_nonexisting_file(self, mock_toc, mock_args):
-        f = StringIO()
-        with redirect_stderr(f):
-            mock_args.return_value = MockArgs()
-            #mock_toc.return_value = MockToc(mock_args.files)
+        with patch('sys.stdin', StringIO(stdin_content)):
+            with patch.object(sys, "argv", test_args):
+                output = StringIO()
+                with redirect_stdout(output):
+                    main()
+                    print("output: '" + output.getvalue() + "'")
+                    self.assertIn("Contents of stdin.html", output.getvalue())
+
+    def test_output(self):
+        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-o", f"{self.o / 'output.txt'}", f"{self.p / 'README.md'}"]
+        with patch.object(sys, "argv", test_args):
             main()
-            self.assertTrue(f'Skipping non-existing file empty.py' in f.getvalue())
+            with open(f"{self.p / 'README.md'}", "r") as f:
+                output_content = f.read()
+            # print("output: '" + output_content)
+            self.assertIn('Contents of README.md', output_content)
 
-    @patch('builtins.open', new_callable=mock_open, read_data="test\n")
-    @patch('toc.cli.parse_args')
-    @patch('toc.toc.Toc')
-    def test_empty_file(self, mock_toc, mock_args, mock_files):
-        f = StringIO()
-        with redirect_stderr(f):
-            mock_args.return_value = MockArgs()
-            main()
-            print(f.getvalue())
-            # if main() has run without errors, this will pass
-            #self.assertTrue(True)
-            self.assertTrue(f'Skipping empty "#" toc for empty.py' in f.getvalue())
-
-    def test_nonexisting_list(self):
-        with patch("sys.argv", ["-l", "empty.list"]):
-            #print(sys.argv)
-            f = StringIO()
-            with contextlib.redirect_stderr(f):
-                args = parse_args()
-                main()
-                self.assertTrue(f'No files provided' in f.getvalue())
-
-    #@patch('builtins.open', new_callable=mock_open, read_data="test\n")
-    #@patch('toc.cli.parse_args')
-    #@patch('toc.toc.Toc')
-    #def test_empty_list(self):
-    #    with patch("sys.argv", ["-l", "empty.list"]):
-    #        #print(sys.argv)
-    #        f = StringIO()
-    #        with contextlib.redirect_stderr(f):
-    #            mock_args.return_value = MockArgs()
-    #            main()
-    #            self.assertTrue(f'No files provided' in f.getvalue())
-
-"""
 # ################################################################ ENTRYPOINT
 
 if __name__ == "__main__":

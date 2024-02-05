@@ -1,41 +1,33 @@
-<!--
-// ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of CHANGELOG.md                                      │
-// ├───────────────────────────────────────────────────────────────┘
-// │
-// ├──┐Changelog - toc
-// │  ├──┐[2.3.0] - 2024-02-02
-// │  │  ├── Added
-// │  │  ├── Documentation
-// │  │  ├── Fixed
-// │  │  ├── Performance
-// │  │  └── Testing
-// │  ├──┐[2.2.0] - 2024-01-29
-// │  │  ├── Added
-// │  │  ├── Documentation
-// │  │  ├── Fixed
-// │  │  └── Testing
-// │  ├──┐[2.1.0] - 2024-01-22
-// │  │  ├── Added
-// │  │  └── Documentation
-// │  ├── [2.0.0] - 2024-01-21
-// │  └── [1.0.0] - 2023-11-03
-// │
-// └───────────────────────────────────────────────────────────────
--->
-
 # Changelog - toc
+
+## Work in progress
+### Added
+
+- Stdin support with "-" argument
+- Set an arbitrary extension with "-e", useful for stdin
+- Native HTML support
+
+### Documentation
+
+- Documented HTML and stdin support
+
+### Testing
+
+- Added stdin and ouput tests for cli script
+- Added cli testing
 
 ## [2.3.0] - 2024-02-02
 ### Added
 
 - If `-o outputFile` is specified, toc will write there even if the inputFile's toc is already up-to-date
+- Drastic performance improvements by reducing regex and list iterations
 - Support for rstudio foldable sections
 
 ### Documentation
 
 - Added useful tools to CONTRIBUTING.md
 - Explaining better what _prettify_connector() does
+- Added code snippets to CONTRIBUTING.md
 
 ### Fixed
 
@@ -44,7 +36,6 @@
 
 ### Performance
 
-- Drastic performance improvements by reducing regex replacements, loops, and list comprehensions
 - Simplified and explained _prettify_connectors()
 - Unified comment replacement in _replace_comment()
 - Defining toc multiline regex pattern once
