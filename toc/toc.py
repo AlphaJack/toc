@@ -41,7 +41,7 @@ import sys
 
 class Toc:
     def __init__(self, inputFile: str = "", outputFile=None, lineNumbers: bool = False, character: str = "#"):
-        self.inputFile = str(inputFile)
+        self.inputFile = "stdin" if str(inputFile) == "-" else str(inputFile)
         self.outputFile = outputFile
         self.extension = self.inputFile.split(".")[-1].lower() if "." in self.inputFile else ""
         self.lineNumbers = lineNumbers
@@ -276,7 +276,10 @@ class Toc:
                 _tocPrefix = []
         # begin the toc with the file name, truncating it if necessary
         _filename = self.inputFile.split("/")[-1]
-        _truncated_filename = (_filename[:46] + "...") if len(_filename) > 46 else _filename
+        if self.inputFile == "stdin":
+            _truncated_filename = f"stdin.{self.extension}" if self.extension != "" else "stdin"
+        else:
+            _truncated_filename = (_filename[:46] + "...") if len(_filename) > 46 else _filename
         _padding = ' ' * (50 - len(_truncated_filename))
         self.innerTocBegin = f"{self.character} ┌───────────────────────────────────────────────────────────────┐"
         self.innerTocTitle = f"{self.character} │ Contents of {_truncated_filename}{_padding}│"
@@ -346,10 +349,11 @@ class Toc:
         _newtoc = []
         _pattern = re.compile(r"<h(\d).*?>(?:<.*?>)?(.*?)</.*?h\d", re.MULTILINE)
         _matches = _pattern.finditer(data)
-        print(sum(1 for _ in _matches))
+        # print(sum(1 for _ in _matches))
         for _match in _matches:
             # print(_match)
             _heading_level = int(_match.group(1))
+            #_heading_text = _match.group(2).strip()
             # blood for the blood god
             _heading_text = re.sub(r"<.*?>", "", _match.group(2).strip())
             _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), _match.group(0)))
@@ -493,8 +497,11 @@ class Toc:
         # display alert for common errors
         _data = ""
         try:
-            with open(self.inputFile, "r") as f:
-                _data = f.read()
+            if self.inputFile == "stdin":
+                _data = sys.stdin.read()
+            else:
+                with open(self.inputFile, "r") as f:
+                    _data = f.read()
         except FileNotFoundError:
             print(f'Skipping non-existing file "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             _data = ""

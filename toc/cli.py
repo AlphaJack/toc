@@ -60,8 +60,9 @@ example comments:
         epilog=example_usage,
         formatter_class=RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group()
-    parser.add_argument("files", nargs="*", help="files or lists of files to process")
+    parser.add_argument("files", nargs="*", help="files or lists of files to process. use '-' to read from stdin")
     parser.add_argument("-c", action="store", dest="character", type=str, help="set an arbitrary comment character (e.g. //)")
+    parser.add_argument("-e", action="store", dest="extension", type=str, help="interpret input as a file with this extension (e.g. html)")
     parser.add_argument("-f", "--to-file", action="store_true", help="add or update toc in the original file")
     group.add_argument("-l", "--from-list", action="store_true", help="consider positional arguments as lists of files")
     parser.add_argument("-n", "--line-numbers", action="store_true", help="print line numbers in toc")
@@ -100,6 +101,7 @@ def process_file(inputFile, args):
     # initialize instance
     t = Toc(inputFile)
     # set comment character and line numbers
+    t.extension = args.extension if args.extension else t.extension
     t.character = args.character if args.character else t.set_character()
     t.lineNumbers = args.line_numbers if args.line_numbers else False
     t.outputFile = args.output_file if args.output_file else None
@@ -114,7 +116,7 @@ def process_file(inputFile, args):
 
 def main():
     # parse arguments
-    #print(sys.argv)
+    # print(sys.argv)
     args = parse_args()
     files = get_files(args)
     # process all files individually
