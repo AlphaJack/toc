@@ -11,16 +11,18 @@
 // ├──┐glob expansion
 // │  ├── Show line numbers
 // │  ├── Set a custom comment character
+// │  ├── Set a custom file extension
+// │  ├── Read from stdin
 // │  ├── Redirect output to another file
 // │  ├── Other commands
 // │  └──┐Exceptional file types
 // │     ├──┐No comments needed
+// │     │  ├── HTML
 // │     │  ├── Markdown
 // │     │  ├── Beancount
 // │     │  └── Perl
 // │     ├──┐Wrap around comments needed
 // │     │  ├── CSS
-// │     │  ├── HTML and Quarto
 // │     │  └── OCaml
 // │     └──┐Compatibility with third-party editors
 // │        ├── Vim and Emacs
@@ -298,6 +300,29 @@ But how could `toc` recognize that `//` is the proper comment character for that
 Well, thanks to AI[^1] `toc` supports most programming and markup languages, from COBOL to Carbon.
 In case it doesn't work as expected, you can force the behavior by running `toc -c "//" example.xyz`.
 
+## Set a custom file extension
+
+You can also force toc to consider an arbitrary file extension by running `toc -e "html" new-file-format.html6`.
+
+## Read from stdin
+
+`toc` can read stdin by using `-` as an argument.
+You may want to set an extension as well: `curl -s "https://example.com/" | toc -e html -`
+
+Result:
+
+```html
+<!--
+// ┌───────────────────────────────────────────────────────────────┐
+// │ Contents of stdin.html                                        │
+// ├───────────────────────────────────────────────────────────────┘
+// │
+// ├── Example Domain
+// │
+// └───────────────────────────────────────────────────────────────
+-->
+```
+
 ## Redirect output to another file
 
 For testing purposes, you can run `toc -o output.py input.py` to choose a different output file.
@@ -313,9 +338,23 @@ You can run `toc -h` for usage info and `toc -v` to read the current version
 ## Exceptional file types
 ### No comments needed
 
+For these file types, you don't need to write comments, as `toc` can leverage the language syntax to build the table of contents
+
+#### HTML
+
+For HTML files, just use regular headings tags such as `<h1>`, `<h2>` and so on:
+
+```html
+<!doctype html>
+<html>
+<h1>Title</h1>
+<h2>Subtitle</h2>
+</html>
+```
+
 #### Markdown
 
-For Markdown files, you don't need to write comments, just organize your sections with one or more `#`:
+For Markdown files, just organize your sections with one or more `#`:
 
     # Title
        
@@ -395,38 +434,6 @@ For CSS files, you have to wrap your `//` comments between `/*` and `*/`:
 
 } /* end Landscape touchscreen */
 
-```
-
-</details>
-
-#### HTML and Quarto
-
-For HTML and Quarto files, you have to wrap your `//` comments between `<!--` and `-->`:
-
-<details>
- <summary>Click to view `example.html`</summary>
-
-```html
-<!doctype html>
-<html lang="en">
-
-<!--
-// ################################################################ Head
--->
-
- <head>
-  <link rel="stylesheet" href="/assets/css/example.css"/>
-  <script src="/assets/js/example.js"></script>
- </head>
-
-<!--
-// ################################################################ Body
--->
-
- <body>
-  <h1>Title</h1>
- </body>
-</html>
 ```
 
 </details>

@@ -20,6 +20,7 @@
 # │     │  ├── HEADER
 # │     │  ├──┐BODY
 # │     │  │  ├── BEANCOUNT AND MARKDOWN
+# │     │  │  ├── HTML
 # │     │  │  ├── PERL
 # │     │  │  ├── GENERIC
 # │     │  │  └── PRETTIFY CONNECTORS
