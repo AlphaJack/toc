@@ -307,7 +307,7 @@ You can also force toc to consider an arbitrary file extension by running `toc -
 ## Read from stdin
 
 `toc` can read stdin by using `-` as an argument.
-You may want to set an extension as well: `curl -s "https://example.com/" | toc -e html -`
+You may want to set an extension as well: `curl -s https://github.com/AlphaJack/toc | toc -e html -`
 
 Result:
 
@@ -317,7 +317,20 @@ Result:
 // │ Contents of stdin.html                                        │
 // ├───────────────────────────────────────────────────────────────┘
 // │
-// ├── Example Domain
+// ├──┐Search code, repositories, users, issues, pull requests...
+// │  └──┐Use saved searches to filter your results more quickly
+// │     └── License
+// ├──┐AlphaJack/toc
+// │  ├──┐About
+// │  │  ├── Topics
+// │  │  ├── Resources
+// │  │  ├── License
+// │  │  ├── Stars
+// │  │  ├── Watchers
+// │  │  └── Forks
+// │  ├── Languages
+// │  └──┐Footer
+// │     └── Footer navigation
 // │
 // └───────────────────────────────────────────────────────────────
 -->

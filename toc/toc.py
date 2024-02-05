@@ -109,7 +109,7 @@ class Toc:
         _, _outerToc = self._generate_toc()
         if _outerToc == "":
             # skip error if we already set self.err
-            print(f'No "{self.character}" toc for "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Could not generate a "{self.character}" toc for "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
             print(_outerToc)
@@ -120,10 +120,15 @@ class Toc:
         # if file has been specified, print there instead of the original file (useful for testing)
         if self.outputFile is None:
             self.outputFile = output if output else self.inputFile
-        # run twice because updating the toc may shift everything down
-        n = 2 if self.lineNumbers else 1
-        for _ in range(n):
-            self._add_or_update()
+        if self.inputFile == "stdin":
+            print(f"Cannot write to stdin", file=sys.stderr) if self.err is None else None
+            _data = ""
+            self.err = "stdin"
+        else:
+            # run twice because updating the toc may shift everything down
+            n = 2 if self.lineNumbers else 1
+            for _ in range(n):
+                self._add_or_update()
 
 # ################################ INTERNAL METHODS
 # ################ TOC OUTPUT
@@ -349,16 +354,17 @@ class Toc:
     def _process_html(self, data):
         _newtoc = []
         _pattern = re.compile(r"<h(\d).*?>(?:<.*?>)?(.*?)</.*?h\d", re.MULTILINE)
-        _matches = _pattern.finditer(data)
+        # sometimes it fails if not using list()
+        _matches = list(_pattern.finditer(data))
         # print(sum(1 for _ in _matches))
+        # print(len(_matches))
+        # print(_matches)
         for _match in _matches:
-            # print(_match)
             _heading_level = int(_match.group(1))
-            #_heading_text = _match.group(2).strip()
             # blood for the blood god
+            # in case there are fancy tags or other elements inside the title, we remove them
             _heading_text = re.sub(r"<.*?>", "", _match.group(2).strip())
             _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), _match.group(0)))
-        # print(_newtoc)
         return _newtoc
 
 # #### PERL

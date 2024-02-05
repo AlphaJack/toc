@@ -94,7 +94,7 @@ class TestCli(unittest.TestCase):
             with redirect_stderr(output):
                 main()
                 # print("output: '" + output.getvalue().strip() + "'")
-                self.assertIn('No "//" toc for "', output.getvalue())
+                self.assertIn('Could not generate a "//" toc for "', output.getvalue())
 
     def test_list(self):
         test_args = [f"{self.p / 'toc' / 'cli.py'}", "-l", f"{self.p / '.tocfiles'}"]
