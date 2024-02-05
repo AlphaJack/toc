@@ -296,10 +296,13 @@ class Toc:
     def _toc_body(self):
         # read file content and process it accordingly
         # display alert for common errors
-        _lines = self._read_file().splitlines()
+        _data = self._read_file()
+        _lines = _data.splitlines()
         match self.extension:
             case "beancount":
                 _newtoc = self._process_increasing(_lines, "*")
+            case "html":
+                _newtoc = self._process_html(_data)
             case "md":
                 _newtoc = self._process_increasing(_lines, "#")
             case "pl" | "pm" | "pod":
@@ -321,19 +324,36 @@ class Toc:
 
 # #### BEANCOUNT AND MARKDOWN
 
-    def _process_increasing(self, lines, heading):
+    def _process_increasing(self, lines, heading_character):
         # parse markdown and beancount files, reusing headings or sections
         _newtoc = []
         # ignore comments for other languages
         # don't consider valid comments in code blocks as headings: "```\n# #### Example comment in python\n```"
-        _pattern = re.compile(r"^(" + re.escape(heading) + "+) (?!#+)(.*)$")
-        for n, comment in enumerate(lines):
-            _match = _pattern.match(comment)
+        _pattern = re.compile(r"^(" + re.escape(heading_character) + "+) (?!#+)(.*)$")
+        for n, heading_original in enumerate(lines):
+            _match = _pattern.match(heading_original)
             if _match:
                 _heading_level = len(_match.group(1))
                 _heading_text = f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
-                _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), comment))
+                _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), heading_original))
                 # print(_newtoc)
+        return _newtoc
+
+# #### HTML
+
+    # every time an html page is parsed with regex, a software engineer dies
+    def _process_html(self, data):
+        _newtoc = []
+        _pattern = re.compile(r"<h(\d).*?>(?:<.*?>)?(.*?)</.*?h\d", re.MULTILINE)
+        _matches = _pattern.finditer(data)
+        print(sum(1 for _ in _matches))
+        for _match in _matches:
+            # print(_match)
+            _heading_level = int(_match.group(1))
+            # blood for the blood god
+            _heading_text = re.sub(r"<.*?>", "", _match.group(2).strip())
+            _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), _match.group(0)))
+        # print(_newtoc)
         return _newtoc
 
 # #### PERL
