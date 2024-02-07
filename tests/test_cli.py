@@ -17,34 +17,33 @@
 # test
 import unittest
 
-# mimic file opening
-from unittest.mock import patch, mock_open
-
 # capture stderr to variable
 # https://stackoverflow.com/a/61533524/13448666
 from io import StringIO
 from contextlib import redirect_stderr
 from contextlib import redirect_stdout
 
+# mimic file opening
+from unittest.mock import patch
 
 # current directory
 from pathlib import Path
+
 # load local module rather than system installed version
 import sys
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, project_root)
 
 # module to test
-#from toc.toc import Toc
-from toc.toc import Toc
-from toc.cli import *
-#from toc.__version__ import __version__
+from toc.cli import main
+
+# from toc.__version__ import __version__
 
 # ################################################################ TEST CLASSES
 
 # ################################ MOCK SETUP
 
-#class MockArgs():
+# class MockArgs():
 #    def __init__(self):
 #        self.from_list = False
 #        self.output_file = None
@@ -58,7 +57,6 @@ from toc.cli import *
 
 
 class TestCli(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.t = project_root / "tests"
@@ -94,7 +92,7 @@ class TestCli(unittest.TestCase):
             with redirect_stderr(output):
                 main()
                 # print("output: '" + output.getvalue().strip() + "'")
-                self.assertIn('Could not generate a "//" toc for "', output.getvalue())
+                self.assertIn('Could not generate a "//" toc from "', output.getvalue())
 
     def test_list(self):
         test_args = [f"{self.p / 'toc' / 'cli.py'}", "-l", f"{self.p / '.tocfiles'}"]
@@ -103,7 +101,10 @@ class TestCli(unittest.TestCase):
             with redirect_stdout(output):
                 main()
                 # print("output: '" + output.getvalue() + "'")
-                self.assertTrue("Contents of README.md" in output.getvalue() and "Contents of USAGE.md" in output.getvalue())
+                self.assertTrue(
+                    "Contents of README.md" in output.getvalue()
+                    and "Contents of USAGE.md" in output.getvalue()
+                )
 
     def test_stdin(self):
         test_args = [f"{self.p / 'toc' / 'cli.py'}", "-e", "html", "-"]
@@ -114,7 +115,7 @@ class TestCli(unittest.TestCase):
 <h2>Subtitle</h2>
 </html>
 """
-        with patch('sys.stdin', StringIO(stdin_content)):
+        with patch("sys.stdin", StringIO(stdin_content)):
             with patch.object(sys, "argv", test_args):
                 output = StringIO()
                 with redirect_stdout(output):
@@ -123,13 +124,19 @@ class TestCli(unittest.TestCase):
                     self.assertIn("Contents of stdin.html", output.getvalue())
 
     def test_output(self):
-        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-o", f"{self.o / 'output.txt'}", f"{self.p / 'README.md'}"]
+        test_args = [
+            f"{self.p / 'toc' / 'cli.py'}",
+            "-o",
+            f"{self.o / 'output.txt'}",
+            f"{self.p / 'README.md'}",
+        ]
         with patch.object(sys, "argv", test_args):
             main()
             with open(f"{self.p / 'README.md'}", "r") as f:
                 output_content = f.read()
             # print("output: '" + output_content)
-            self.assertIn('Contents of README.md', output_content)
+            self.assertIn("Contents of README.md", output_content)
+
 
 # ################################################################ ENTRYPOINT
 

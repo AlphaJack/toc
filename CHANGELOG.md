@@ -4,9 +4,11 @@
 // ├───────────────────────────────────────────────────────────────┘
 // │
 // ├──┐Changelog - toc
-// │  ├──┐Work in progress
+// │  ├──┐[2.4.0] - 2024-02-07
 // │  │  ├── Added
+// │  │  ├── Changed
 // │  │  ├── Documentation
+// │  │  ├── Performance
 // │  │  └── Testing
 // │  ├──┐[2.3.0] - 2024-02-02
 // │  │  ├── Added
@@ -30,16 +32,26 @@
 
 # Changelog - toc
 
-## Work in progress
+## [2.4.0] - 2024-02-07
 ### Added
 
-- Stdin support with "-" argument
-- Set an arbitrary extension with "-e", useful for stdin
+- Native man pages support
+- Line numbers to HTML toc
+- Stdin support with `-` argument
+- Set an arbitrary extension with `-e`, useful for stdin
 - Native HTML support
+
+### Changed
+
+- Moved prefix and suffix to dedicated function
 
 ### Documentation
 
 - Documented HTML and stdin support
+
+### Performance
+
+- Avoiding replacing original match when writing toc
 
 ### Testing
 

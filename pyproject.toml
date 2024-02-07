@@ -15,6 +15,9 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["toc"]
+
 [tool.setuptools.dynamic]
 # read version from __init__.py
 version = {attr = "toc.__version__"}

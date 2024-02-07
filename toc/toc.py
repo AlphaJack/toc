@@ -110,7 +110,7 @@ class Toc:
         _, _outerToc = self._generate_toc()
         if _outerToc == "":
             # skip error if we already set self.err
-            print(f'Could not generate a "{self.character}" toc for "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Could not generate a "{self.character}" toc from "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
             print(_outerToc)
@@ -125,7 +125,7 @@ class Toc:
             print("Cannot write to stdin", file=sys.stderr) if self.err is None else None
             self.err = "stdin"
         else:
-            # run twice because updating the toc may shift everything down
+            # run twice because updating the toc with self.lineNumbers == True may shift everything down
             n = 2 if self.lineNumbers else 1
             for _ in range(n):
                 self._add_or_update()
@@ -134,12 +134,13 @@ class Toc:
 # ################ TOC OUTPUT
 
     def _add_or_update(self):
-        # if the file does not contain a toc, add it, otherwise update it
         _innerToc, _outerToc = self._generate_toc()
+        # do not write an empty file
         if _outerToc == "":
-            print(f'Skipping writing empty "{self.character}" toc to "{self.outputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Could not generate a "{self.character}" toc from "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             self.err = "empty"
         else:
+            # if the file does not contain a toc, add it, otherwise update it
             # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
             self.pattern = re.compile(rf"{self.innerTocBegin}\n{self.innerTocTitle}(.*?){self.innerTocEnd}", re.DOTALL)
             # print(self.pattern)
@@ -438,7 +439,7 @@ class Toc:
             if _match:
                 _heading_level = int(_match.group(1))
                 _heading_text = f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
-                _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), line))
+                _newtoc.append(self._add_heading(_heading_level, _heading_text))
         # print(_newtoc)
         return _newtoc
 

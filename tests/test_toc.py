@@ -16,6 +16,7 @@
 
 # test
 import unittest
+
 # clean output path if existing
 import shutil
 
@@ -24,6 +25,7 @@ from pathlib import Path
 
 # load local module rather than system installed version
 import sys
+
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, project_root)
 
@@ -49,10 +51,16 @@ class TestTocMethods(unittest.TestCase):
             ("file.", ""),
         ]
         for input_file, expected_extension in test_cases:
-            with self.subTest(input_file=input_file, expected_extension=expected_extension):
+            with self.subTest(
+                input_file=input_file, expected_extension=expected_extension
+            ):
                 t = Toc(input_file)
                 actual_extension = t.extension
-                self.assertEqual(actual_extension, expected_extension, f'Unexpected extension "{actual_extension}" for file "{input_file}"')
+                self.assertEqual(
+                    actual_extension,
+                    expected_extension,
+                    f'Unexpected extension "{actual_extension}" for file "{input_file}"',
+                )
 
     def test_set_character(self):
         test_cases = [
@@ -65,10 +73,16 @@ class TestTocMethods(unittest.TestCase):
             ("file", "#"),
         ]
         for input_file, expected_character in test_cases:
-            with self.subTest(input_file=input_file, expected_character=expected_character):
+            with self.subTest(
+                input_file=input_file, expected_character=expected_character
+            ):
                 t = Toc(input_file)
                 actual_character = t.set_character()
-                self.assertEqual(actual_character, expected_character, f'Unexpected comment character "{actual_character}" for file "{input_file}"')
+                self.assertEqual(
+                    actual_character,
+                    expected_character,
+                    f'Unexpected comment character "{actual_character}" for file "{input_file}"',
+                )
 
     def test_toc_prefix_suffix(self):
         test_cases = {
@@ -81,13 +95,22 @@ class TestTocMethods(unittest.TestCase):
             t = Toc("mock.txt")
             t.extension = extension
             actual_prefix, actual_suffix = t._toc_prefix_suffix()
-            comparison = True if actual_prefix == expected_prefix and actual_suffix == expected_suffix else False
+            comparison = (
+                True
+                if actual_prefix == expected_prefix and actual_suffix == expected_suffix
+                else False
+            )
             with self.subTest(comparison=comparison):
-                self.assertTrue(comparison, f'Unexpected prefix or suffix "{actual_prefix, actual_suffix}" for extension "{extension}"')
+                self.assertTrue(
+                    comparison,
+                    f'Unexpected prefix or suffix "{actual_prefix, actual_suffix}" for extension "{extension}"',
+                )
 
     def test_process_generic_1(self):
         t = Toc("mock.txt")
-        lines = ["# ################################################################ Heading 1"]
+        lines = [
+            "# ################################################################ Heading 1"
+        ]
         expected = ["# ├── Heading 1"]
         result = t._process_generic(lines)
         self.assertEqual(result, expected)
@@ -102,24 +125,70 @@ class TestTocMethods(unittest.TestCase):
 
     def test_prettify_connectors(self):
         t = Toc("mock.txt")
-        input_list = ['# ├── MODULES', '# ├── CLASS', '# │  └── PUBLIC METHODS', '# │     └── COMMENT CHARACTER', '# │     └── TOC OUTPUT', '# │        └── STDOUT', '# │        └── FILE', '# │  └── INTERNAL METHODS', '# │     └── TOC OUTPUT', '# │        └── FILE', '# │           └── ADD', '# │           └── UPDATE', '# │     └── TOC GENERATION', '# │        └── HEADER', '# │        └── BODY', '# │           └── BEANCOUNT AND MARKDOWN', '# │           └── PERL', '# │           └── GENERIC', '# │           └── PRETTIFY CONNECTORS', '# │        └── FOOTER', '# │     └── TOC INPUT']
-        expected_list = ['# ├── MODULES', '# ├──┐CLASS', '# │  ├──┐PUBLIC METHODS', '# │  │  ├── COMMENT CHARACTER', '# │  │  └──┐TOC OUTPUT', '# │  │     ├── STDOUT', '# │  │     └── FILE', '# │  └──┐INTERNAL METHODS', '# │     ├──┐TOC OUTPUT', '# │     │  └──┐FILE', '# │     │     ├── ADD', '# │     │     └── UPDATE', '# │     ├──┐TOC GENERATION', '# │     │  ├── HEADER', '# │     │  ├──┐BODY', '# │     │  │  ├── BEANCOUNT AND MARKDOWN', '# │     │  │  ├── PERL', '# │     │  │  ├── GENERIC', '# │     │  │  └── PRETTIFY CONNECTORS', '# │     │  └── FOOTER', '# │     └── TOC INPUT']
+        input_list = [
+            "# ├── MODULES",
+            "# ├── CLASS",
+            "# │  └── PUBLIC METHODS",
+            "# │     └── COMMENT CHARACTER",
+            "# │     └── TOC OUTPUT",
+            "# │        └── STDOUT",
+            "# │        └── FILE",
+            "# │  └── INTERNAL METHODS",
+            "# │     └── TOC OUTPUT",
+            "# │        └── FILE",
+            "# │           └── ADD",
+            "# │           └── UPDATE",
+            "# │     └── TOC GENERATION",
+            "# │        └── HEADER",
+            "# │        └── BODY",
+            "# │           └── BEANCOUNT AND MARKDOWN",
+            "# │           └── PERL",
+            "# │           └── GENERIC",
+            "# │           └── PRETTIFY CONNECTORS",
+            "# │        └── FOOTER",
+            "# │     └── TOC INPUT",
+        ]
+        expected_list = [
+            "# ├── MODULES",
+            "# ├──┐CLASS",
+            "# │  ├──┐PUBLIC METHODS",
+            "# │  │  ├── COMMENT CHARACTER",
+            "# │  │  └──┐TOC OUTPUT",
+            "# │  │     ├── STDOUT",
+            "# │  │     └── FILE",
+            "# │  └──┐INTERNAL METHODS",
+            "# │     ├──┐TOC OUTPUT",
+            "# │     │  └──┐FILE",
+            "# │     │     ├── ADD",
+            "# │     │     └── UPDATE",
+            "# │     ├──┐TOC GENERATION",
+            "# │     │  ├── HEADER",
+            "# │     │  ├──┐BODY",
+            "# │     │  │  ├── BEANCOUNT AND MARKDOWN",
+            "# │     │  │  ├── PERL",
+            "# │     │  │  ├── GENERIC",
+            "# │     │  │  └── PRETTIFY CONNECTORS",
+            "# │     │  └── FOOTER",
+            "# │     └── TOC INPUT",
+        ]
         output_list = t._prettify_connectors(input_list)
         self.assertEqual(output_list, expected_list)
 
     def test_read_file(self):
-        with patch("builtins.open", side_effect=UnicodeDecodeError("utf-8", b"", 1, 2, "mock reason")):
+        with patch(
+            "builtins.open",
+            side_effect=UnicodeDecodeError("utf-8", b"", 1, 2, "mock reason"),
+        ):
             t = Toc("mock.txt")
             data = t._read_file()
             self.assertEqual(data, "")
             self.assertEqual(t.err, "binary")
 
+
 # ################################ FILE PROCESSING
 
 
 class TestTocFiles(unittest.TestCase):
-
-
     @classmethod
     def setUpClass(cls):
         cls.t = project_root / "tests"
@@ -149,19 +218,30 @@ class TestTocFiles(unittest.TestCase):
             t.lineNumbers = True if file.name == "latex_linenumbers.tex" else False
             t.to_file(output_file)
             if output_file.is_file() and reference_file.is_file():
-                with open(output_file, "r") as output, open(reference_file, "r") as reference:
+                with open(output_file, "r") as output, open(
+                    reference_file, "r"
+                ) as reference:
                     output_content, reference_content = output.read(), reference.read()
                     comparison = True if output_content == reference_content else False
                     with self.subTest(comparison=comparison):
-                        self.assertTrue(comparison, f'Unexpected content (should be different) processing "{file.name}", please run `diff {output_file} {reference_file}`')
+                        self.assertTrue(
+                            comparison,
+                            f'Unexpected content (should be different) processing "{file.name}", please run `diff {output_file} {reference_file}`',
+                        )
             elif output_file.is_file():
                 comparison = False
                 with self.subTest(comparison=comparison):
-                    self.assertTrue(comparison, f'Unexpected output file (should be none) processing "{file.name}", please check "{output_file}"')
+                    self.assertTrue(
+                        comparison,
+                        f'Unexpected output file (should be none) processing "{file.name}", please check "{output_file}"',
+                    )
             elif reference_file.is_file():
                 comparison = False
                 with self.subTest(comparison=comparison):
-                    self.assertTrue(comparison, f'Unexpected empty output (should be something) processing "{file.name}"')
+                    self.assertTrue(
+                        comparison,
+                        f'Unexpected empty output (should be something) processing "{file.name}"',
+                    )
             else:
                 comparison = True
                 with self.subTest(comparison=comparison):
@@ -180,4 +260,3 @@ class TestTocFiles(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(buffer=True)
-
