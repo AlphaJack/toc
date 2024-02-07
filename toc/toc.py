@@ -19,13 +19,14 @@
 # │     ├──┐TOC GENERATION
 # │     │  ├── PREFIX AND SUFFIX
 # │     │  ├── HEADER
-# │     │  ├──┐BODY
-# │     │  │  ├── BEANCOUNT AND MARKDOWN
-# │     │  │  ├── HTML
-# │     │  │  ├── PERL
-# │     │  │  ├── GENERIC
-# │     │  │  └── PRETTIFY CONNECTORS
-# │     │  └── FOOTER
+# │     │  ├── FOOTER
+# │     │  └──┐BODY
+# │     │     ├── BEANCOUNT AND MARKDOWN
+# │     │     ├── HTML
+# │     │     ├── MAN PAGES
+# │     │     ├── PERL
+# │     │     ├── GENERIC
+# │     │     └── PRETTIFY CONNECTORS
 # │     └── TOC INPUT
 # │
 # └───────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ class Toc:
             case "adb" | "ads" | "elm" | "hs" | "lua" | "sql":
                 self.character = "--"
             # https://www.gnu.org/software/groff/manual/, https://manpages.bsd.lv/mdoc.html
-            case "1" | "1m" | "2" | "3" | "4" | "5" | "6" | "7" | "8":
+            case "1" | "1m" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "n":
                 self.character = '.\\"'
             case "ml" | "mli":
                 self.character = "*"
@@ -311,6 +312,19 @@ class Toc:
         # _tocHeader = "\n".join(_tocHeaderLines)
         return _tocHeader
 
+# ######## FOOTER
+
+    def _toc_footer(self):
+        # end the toc with an horizontal line
+        self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
+        # _tocFooterLines = [
+        _tocFooter = [
+            f"{self.character} │",
+            self.innerTocEnd,
+        ]
+        # _tocFooter = "\n".join(_tocFooterLines)
+        return _tocFooter
+
 # ######## BODY
 
     def _toc_body(self):
@@ -321,10 +335,12 @@ class Toc:
         match self.extension:
             case "beancount":
                 _newtoc = self._process_increasing(_lines, "*")
-            case "html":
-                _newtoc = self._process_html(_data)
             case "md":
                 _newtoc = self._process_increasing(_lines, "#")
+            case "html":
+                _newtoc = self._process_html(_data)
+            case "1" | "1m" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "n":
+                _newtoc = self._process_man(_lines)
             case "pl" | "pm" | "pod":
                 _newtoc = self._process_perl(_lines)
             case _:
@@ -332,13 +348,12 @@ class Toc:
         _tocBody = self._prettify_connectors(_newtoc)
         return _tocBody
 
-    def _replace_comment(self, level, text):
+    def _add_heading(self, level, text):
         if level == 1:
             _replacement = self.character + " ├── " + text
         else:
-            # 3 spaces per heading level
-            _indentation = "   " * (level - 2)
-            _replacement = self.character + " │  " + _indentation + "└── " + text
+            # character, left toc margin, indentation of 3 spaces per heading level, connectors, text
+            _replacement = self.character + " │  " + "   " * (level - 2) + "└── " + text
         # print(_replacement)
         return _replacement
 
@@ -350,12 +365,12 @@ class Toc:
         # ignore comments for other languages
         # don't consider valid comments in code blocks as headings: "```\n# #### Example comment in python\n```"
         _pattern = re.compile(r"^(" + re.escape(heading_character) + "+) (?!#+)(.*)$")
-        for n, heading_original in enumerate(lines):
-            _match = _pattern.match(heading_original)
+        for n, line in enumerate(lines):
+            _match = _pattern.match(line)
             if _match:
                 _heading_level = len(_match.group(1))
                 _heading_text = f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
-                _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), heading_original))
+                _newtoc.append(self._add_heading(_heading_level, _heading_text))
                 # print(_newtoc)
         return _newtoc
 
@@ -365,17 +380,52 @@ class Toc:
     def _process_html(self, data):
         _newtoc = []
         _pattern = re.compile(r"<h(\d).*?>(?:<.*?>)?(.*?)</.*?h\d", re.MULTILINE)
-        # sometimes it fails if not using list()
-        _matches = list(_pattern.finditer(data))
+        # _matches = _pattern.finditer(data)
         # print(sum(1 for _ in _matches))
+        # for _match in _matches:
+        # sometimes it fails if not using list()
+        # _matches = list(_pattern.finditer(data))
         # print(len(_matches))
         # print(_matches)
-        for _match in _matches:
+        # used to calculare line numbers without starting from the beginning every time
+        _fromLastMatch = _previousN = 0
+        for _match in _pattern.finditer(data):
+            # indicates character, not line number
             _heading_level = int(_match.group(1))
-            # blood for the blood god
             # in case there are fancy tags or other elements inside the title, we remove them
+            # blood for the blood god
             _heading_text = re.sub(r"<.*?>", "", _match.group(2).strip())
-            _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), _match.group(0)))
+            if self.lineNumbers:
+                # return the character number, not the line number
+                _untilCurrentMatch = _match.start(0)
+                # to calculate the line number, let's count the number of "\n" up to the match start, and add 1 to the result
+                n = 1 + _previousN + data.count("\n", _fromLastMatch, _untilCurrentMatch)
+                _heading_text = _heading_text + " " + str(n)
+                # update with the position of the current match
+                _fromLastMatch = _untilCurrentMatch
+                # remove the 1 that was added to n
+                _previousN = n - 1
+            _newtoc.append(self._add_heading(_heading_level, _heading_text))
+        return _newtoc
+
+# #### MAN PAGES
+
+    def _process_man(self, lines):
+        # parse perl files, reusing headings
+        _newtoc = []
+        _pattern = re.compile(r'^\.(T[Hh]|S[HhSs]) "?(\w+?(?:\s\w+?)*)"?(\s|$)')
+        for n, line in enumerate(lines):
+            _match = _pattern.match(line)
+            if _match:
+                match _match.group(1):
+                    case "TH" | "Th":
+                        _heading_level = 1
+                    case "SH" | "Sh":
+                        _heading_level = 2
+                    case "SS" | "Ss":
+                        _heading_level = 3
+                _heading_text = f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
+                _newtoc.append(self._add_heading(_heading_level, _heading_text))
         return _newtoc
 
 # #### PERL
@@ -385,12 +435,12 @@ class Toc:
         # parse perl files, reusing headings
         _newtoc = []
         _pattern = re.compile(r"^=head(\d) (.*)$")
-        for n, comment in enumerate(lines):
-            _match = _pattern.match(comment)
+        for n, line in enumerate(lines):
+            _match = _pattern.match(line)
             if _match:
                 _heading_level = int(_match.group(1))
                 _heading_text = f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
-                _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), comment))
+                _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), line))
         # print(_newtoc)
         return _newtoc
 
@@ -409,7 +459,7 @@ class Toc:
                 # print(_heading_level)
                 # print(_heading_text)
                 # removing .strip() for cobol files
-                _newtoc.append(_pattern.sub(self._replace_comment(_heading_level, _heading_text), comment))
+                _newtoc.append(self._add_heading(_heading_level, _heading_text))
                 # print(_newtoc)
         # special post-processing for r
         match self.extension:
@@ -482,19 +532,6 @@ class Toc:
             _tocBody = []
         # print(_tocBody)
         return _tocBody
-
-# ######## FOOTER
-
-    def _toc_footer(self):
-        # end the toc with an horizontal line
-        self.innerTocEnd = f"{self.character} └───────────────────────────────────────────────────────────────"
-        # _tocFooterLines = [
-        _tocFooter = [
-            f"{self.character} │",
-            self.innerTocEnd,
-        ]
-        # _tocFooter = "\n".join(_tocFooterLines)
-        return _tocFooter
 
 # ################ TOC INPUT
 

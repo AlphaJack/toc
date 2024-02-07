@@ -16,8 +16,9 @@
 // │  ├── Redirect output to another file
 // │  ├── Other commands
 // │  └──┐Exceptional file types
-// │     ├──┐No comments needed
+// │     ├──┐Native support
 // │     │  ├── HTML
+// │     │  ├── Man pages
 // │     │  ├── Markdown
 // │     │  ├── Beancount
 // │     │  └── Perl
@@ -349,7 +350,7 @@ The `-o` flag is incompatible with the `-l` one.
 You can run `toc -h` for usage info and `toc -v` to read the current version
 
 ## Exceptional file types
-### No comments needed
+### Native support
 
 For these file types, you don't need to write comments, as `toc` can leverage the language syntax to build the table of contents
 
@@ -363,6 +364,20 @@ For HTML files, just use regular headings tags such as `<h1>`, `<h2>` and so on:
 <h1>Title</h1>
 <h2>Subtitle</h2>
 </html>
+```
+
+#### Man pages
+
+For `man` pages such as groff and mandoc, just use regular headings indicators `.\TH`, `.\SH` and `.\Ss`:
+
+```groff
+.TH MAN 1 "2023-09-23" "2.12.0" "Manual pager utils"
+
+.SH NAME
+man \- an interface to the system reference manuals
+
+.SH SYNOPSIS
+.\" The general command line
 ```
 
 #### Markdown
