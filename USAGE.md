@@ -36,31 +36,6 @@
 
 The scenarios below show different features of `toc`
 
-<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
-
-- [Detailed TOC usage](#detailed-toc-usage)
-   * [Read the table of contents](#read-the-table-of-contents)
-   * [Embed the table of contents in the original file](#embed-the-table-of-contents-in-the-original-file)
-   * [Process multiple files](#process-multiple-files)
-   * [Show line numbers](#show-line-numbers)
-   * [Set a custom comment character](#set-a-custom-comment-character)
-   * [Redirect output to another file](#redirect-output-to-another-file)
-   * [Other commands](#other-commands)
-   * [Exceptional file types](#exceptional-file-types)
-      + [No comments needed](#no-comments-needed)
-         - [Markdown](#markdown)
-         - [Beancount](#beancount)
-         - [Perl](#perl)
-      + [Wrap around comments needed](#wrap-around-comments-needed)
-         - [CSS](#css)
-         - [HTML and Quarto](#html-and-quarto)
-         - [OCaml](#ocaml)
-      + [Compatibility with third-party editors](#compatibility-with-third-party-editors)
-         - [Vim and Emacs](#vim-and-emacs)
-         - [RStudio](#rstudio)
-
-<!-- TOC end -->
-
 ## Read the table of contents
 
 Let's say you want to structure your javascript file "example.js".
