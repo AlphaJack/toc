@@ -5,15 +5,14 @@
 # ├───────────────────────────────────────────────────────────────┘
 # │
 # ├── MODULES
-# ├──┐CLASS
+# ├──┐CLASSES
 # │  ├──┐PUBLIC METHODS
 # │  │  ├── COMMENT CHARACTER
 # │  │  └──┐TOC OUTPUT
 # │  │     ├── STDOUT
-# │  │     └── FILE
+# │  │     └──┐FILE
 # │  └──┐INTERNAL METHODS
-# │     ├──┐TOC OUTPUT
-# │     │  └──┐FILE
+# │     ├── TOC OUTPUT
 # │     │     ├── ADD
 # │     │     └── UPDATE
 # │     ├──┐TOC GENERATION
@@ -40,7 +39,7 @@ import re
 import sys
 
 
-# ################################################################ CLASS
+# ################################################################ CLASSES
 
 class Toc:
     def __init__(self, inputFile: str = "", outputFile=None, lineNumbers: bool = False, character: str = "#"):
@@ -133,7 +132,6 @@ class Toc:
 
 # ################################ INTERNAL METHODS
 # ################ TOC OUTPUT
-# ######## FILE
 
     def _add_or_update(self):
         # if the file does not contain a toc, add it, otherwise update it
@@ -159,16 +157,16 @@ class Toc:
                 with open(self.outputFile, "w") as f:
                     f.write(data)
             except PermissionError:
-                print(f'Skipping write-protected file "{self.outputFile}"', file=sys.stderr) if self.err is None else None
+                print(f'Skipping write-protected "{self.outputFile}"', file=sys.stderr) if self.err is None else None
                 self.err = "write"
                 self.updated = True
             except BaseException:
-                print(f'Skipping writing file "{self.outputFile}"', file=sys.stderr) if self.err is None else None
+                print(f'Unknown error while writing "{self.outputFile}"', file=sys.stderr) if self.err is None else None
                 self.err = "unknownw"
                 self.updated = True
         elif not self.updated:
             # data should never be empty if self.updated = False, but in case least we prevented cleaning the file
-            print(f'Skipping writing file "{self.outputFile}"', file=sys.stderr)
+            print(f'Skipping writing "{self.outputFile}"', file=sys.stderr)
             self.updated = True
         # elif self.updated: we skipped replacing the same toc
 
@@ -179,7 +177,7 @@ class Toc:
         _data = self._check_directives(outerToc)
         self._write_toc(_data)
         if not self.updated:
-            print(f'Adding toc to file "{self.outputFile}"', file=sys.stderr)
+            print(f'Adding toc to "{self.outputFile}"', file=sys.stderr)
             self.updated = True
 
     def _check_directives(self, outerToc):
@@ -229,7 +227,7 @@ class Toc:
         _data = self._replace_existing_toc(innerToc)
         self._write_toc(_data)
         if not self.updated:
-            print(f'Updating toc in file "{self.outputFile}"', file=sys.stderr)
+            print(f'Updating toc in "{self.outputFile}"', file=sys.stderr)
             self.updated = True
 
     def _replace_existing_toc(self, innerToc):
@@ -241,7 +239,7 @@ class Toc:
             self.err = "same"
             _data = None
             if not self.updated:
-                print(f'Skipping replacing same toc in file "{self.outputFile}"', file=sys.stderr)
+                print(f'Skipping unchanged toc in "{self.outputFile}"', file=sys.stderr)
                 self.updated = True
         else:
             # use non-greedy regex to only replace the smalles portion of text between innerTocBegin and innerTocEnd
@@ -546,11 +544,11 @@ class Toc:
                 with open(self.inputFile, "r") as f:
                     _data = f.read()
         except FileNotFoundError:
-            print(f'Skipping non-existing file "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Skipping non-existing "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             _data = ""
             self.err = "notfound"
         except PermissionError:
-            print(f'Skipping read-protected file "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Skipping read-protected "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             _data = ""
             self.err = "read"
         except IsADirectoryError:
@@ -558,11 +556,11 @@ class Toc:
             _data = ""
             self.err = "directory"
         except UnicodeDecodeError:
-            print(f'Skipping binary file "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Skipping binary "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             _data = ""
             self.err = "binary"
         except BaseException:
-            print(f'Skipping file "{self.inputFile}"', file=sys.stderr) if self.err is None else None
+            print(f'Unknown error while reading "{self.inputFile}"', file=sys.stderr) if self.err is None else None
             _data = ""
             self.err = "unknownr"
         finally:
