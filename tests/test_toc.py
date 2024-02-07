@@ -70,19 +70,20 @@ class TestTocMethods(unittest.TestCase):
                 actual_character = t.set_character()
                 self.assertEqual(actual_character, expected_character, f'Unexpected comment character "{actual_character}" for file "{input_file}"')
 
-    def test_toc_prefix(self):
-        test_cases = [
-            ("css", ["/*"]),
-            ("ml", ["(*"]),
-            ("", []),
-        ]
-        for input_extension, expected_prefix in test_cases:
+    def test_toc_prefix_suffix(self):
+        test_cases = {
+            "c": ([], []),
+            "css": (["/*"], ["*/"]),
+            "ml": (["(*"], ["*)"]),
+            "": ([], []),
+        }
+        for extension, (expected_prefix, expected_suffix) in test_cases.items():
             t = Toc("mock.txt")
-            with self.subTest(input_file=input_extension, expected_prefix=expected_prefix):
-                t.extension = input_extension
-                actual_prefix, actual_header = t._toc_header()
-                self.assertEqual(actual_prefix, expected_prefix, f'Unexpected comment character "{actual_prefix}" for extension "{input_extension}"')
-
+            t.extension = extension
+            actual_prefix, actual_suffix = t._toc_prefix_suffix()
+            comparison = True if actual_prefix == expected_prefix and actual_suffix == expected_suffix else False
+            with self.subTest(comparison=comparison):
+                self.assertTrue(comparison, f'Unexpected prefix or suffix "{actual_prefix, actual_suffix}" for extension "{extension}"')
 
     def test_process_generic_1(self):
         t = Toc("mock.txt")
@@ -90,7 +91,7 @@ class TestTocMethods(unittest.TestCase):
         expected = ["# ├── Heading 1"]
         result = t._process_generic(lines)
         self.assertEqual(result, expected)
-        
+
     def test_process_generic_2n(self):
         t = Toc("mock.beancount")
         t.set_character()
@@ -98,19 +99,6 @@ class TestTocMethods(unittest.TestCase):
         expected = ["; │     └── Transactions"]
         result = t._process_increasing(lines, "*")
         self.assertEqual(result, expected)
-
-    def test_toc_suffix(self):
-        test_cases = [
-            ("c", []),
-            ("ml", ["*)"]),
-            ("", []),
-        ]
-        for input_extension, expected_suffix in test_cases:
-            t = Toc("mock.txt")
-            with self.subTest(input_file=input_extension, expected_suffix=expected_suffix):
-                t.extension = input_extension
-                actual_footer, actual_suffix = t._toc_footer()
-                self.assertEqual(actual_suffix, expected_suffix, f'Unexpected comment character "{actual_suffix}" for extension "{input_extension}"')
 
     def test_prettify_connectors(self):
         t = Toc("mock.txt")
@@ -149,7 +137,7 @@ class TestTocFiles(unittest.TestCase):
     def test_input_files(self):
         # process each file in the input_dir
         for file in Path.iterdir(self.input_dir):
-            #print(f"\nProcessing {file.name}")
+            # print(f"\nProcessing {file.name}")
             input_file = self.input_dir / file.name
             output_file = self.output_dir / file.name
             reference_file = self.reference_dir / file.name

@@ -17,6 +17,7 @@
 # │     │     ├── ADD
 # │     │     └── UPDATE
 # │     ├──┐TOC GENERATION
+# │     │  ├── PREFIX AND SUFFIX
 # │     │  ├── HEADER
 # │     │  ├──┐BODY
 # │     │  │  ├── BEANCOUNT AND MARKDOWN
@@ -121,8 +122,7 @@ class Toc:
         if self.outputFile is None:
             self.outputFile = output if output else self.inputFile
         if self.inputFile == "stdin":
-            print(f"Cannot write to stdin", file=sys.stderr) if self.err is None else None
-            _data = ""
+            print("Cannot write to stdin", file=sys.stderr) if self.err is None else None
             self.err = "stdin"
         else:
             # run twice because updating the toc may shift everything down
@@ -206,7 +206,7 @@ class Toc:
                     # print(_firstFewLines)
                 case _:
                     # single line shebang, xml, html, vim, emacs, perl pod
-                    if (re.search(r"^#!", _firstLine)
+                    if (re.search(r"^#\!", _firstLine)
                         or re.search(r"<\?xml", _firstLine, re.IGNORECASE)
                         or re.search(r"<!doctype", _firstLine, re.IGNORECASE)
                         or re.search(r"^" + re.escape(self.character) + r"\s+([Vv]im?|ex):", _firstLine)
@@ -252,9 +252,10 @@ class Toc:
 
     def _generate_toc(self):
         # run text processors and convert lists to strings
-        _tocPrefix, _tocHeader = self._toc_header()
+        _tocPrefix, _tocSuffix = self._toc_prefix_suffix()
+        _tocHeader = self._toc_header()
         _tocBody = self._toc_body()
-        _tocFooter, _tocSuffix = self._toc_footer()
+        _tocFooter = self._toc_footer()
         # exclude empty body
         if _tocBody:
             _innerTocList = _tocHeader + _tocBody + _tocFooter
@@ -265,21 +266,31 @@ class Toc:
         else:
             return "", ""
 
-# ######## HEADER
+# ######## PREFIX AND SUFFIX
 
-    def _toc_header(self):
+    def _toc_prefix_suffix(self):
         # print a multi-line comment delimiter if needed
         match self.extension:
             case "css":
                 _tocPrefix = ["/*"]
+                _tocSuffix = ["*/"]
             case "html" | "xml" | "md" | "qmd" | "rmd":
                 _tocPrefix = ["<!--"]
+                _tocSuffix = ["-->"]
             case "ml" | "mli" | "scpd" | "scpt":
                 _tocPrefix = ["(*"]
+                _tocSuffix = ["*)"]
             case "pl" | "pm" | "pod":
                 _tocPrefix = ["=encoding utf8\n=begin comment"]
+                _tocSuffix = ["=end comment"]
             case _:
                 _tocPrefix = []
+                _tocSuffix = []
+        return _tocPrefix, _tocSuffix
+
+# ######## HEADER
+
+    def _toc_header(self):
         # begin the toc with the file name, truncating it if necessary
         _filename = self.inputFile.split("/")[-1]
         if self.inputFile == "stdin":
@@ -298,7 +309,7 @@ class Toc:
             f"{self.character} │"
         ]
         # _tocHeader = "\n".join(_tocHeaderLines)
-        return _tocPrefix, _tocHeader
+        return _tocHeader
 
 # ######## BODY
 
@@ -483,19 +494,7 @@ class Toc:
             self.innerTocEnd,
         ]
         # _tocFooter = "\n".join(_tocFooterLines)
-        # print a multi-line comment delimiter if needed
-        match self.extension:
-            case "css":
-                _tocSuffix = ["*/"]
-            case "html" | "xml" | "md" | "qmd" | "rmd":
-                _tocSuffix = ["-->"]
-            case "ml" | "mli" | "scpd" | "scpt":
-                _tocSuffix = ["*)"]
-            case "pl" | "pm" | "pod":
-                _tocSuffix = ["=end comment"]
-            case _:
-                _tocSuffix = []
-        return _tocFooter, _tocSuffix
+        return _tocFooter
 
 # ################ TOC INPUT
 
