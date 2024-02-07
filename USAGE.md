@@ -4,17 +4,16 @@
 // ├───────────────────────────────────────────────────────────────┘
 // │
 // ├──┐Detailed TOC usage
-// │  ├── Read the table of contents
-// │  ├── Embed the table of contents in the original file
-// │  └── Process multiple files
-// ├── ignore-this-file.txt
-// ├──┐glob expansion
-// │  ├── Show line numbers
-// │  ├── Set a custom comment character
-// │  ├── Set a custom file extension
-// │  ├── Read from stdin
-// │  ├── Redirect output to another file
-// │  ├── Other commands
+// │  ├──┐Features
+// │  │  ├── Read the table of contents
+// │  │  ├── Embed the table of contents in the original file
+// │  │  ├── Process multiple files
+// │  │  ├── Show line numbers
+// │  │  ├── Set a custom comment character
+// │  │  ├── Set a custom file extension
+// │  │  ├── Read from stdin
+// │  │  ├── Redirect output to another file
+// │  │  └── Other commands
 // │  └──┐Exceptional file types
 // │     ├──┐Native support
 // │     │  ├── HTML
@@ -25,7 +24,7 @@
 // │     ├──┐Wrap around comments needed
 // │     │  ├── CSS
 // │     │  └── OCaml
-// │     └──┐Compatibility with third-party editors
+// │     └──┐Integration with third-party editors
 // │        ├── Vim and Emacs
 // │        └── RStudio
 // │
@@ -36,7 +35,8 @@
 
 The scenarios below show different features of `toc`
 
-## Read the table of contents
+## Features
+### Read the table of contents
 
 Let's say you want to structure your javascript file "example.js".
 Single line comments in this language start with `//`.
@@ -82,7 +82,7 @@ If you run `toc example.js`, the program will output the following (stdout):
 // └───────────────────────────────────────────────────────────────
 ```
 
-## Embed the table of contents in the original file
+### Embed the table of contents in the original file
 
 If you want to output the toc we just saw to the file, you should run `toc -f example.js` and get (stderr):
 
@@ -139,7 +139,7 @@ If you run again `toc -f example.js`, it recognizes that there is no need to upd
 However, if you add new sections to the file and run again `toc -f example.js`, it will update the file accordingly:
 
 ```
-Updating toc in file example.js
+Updating toc in example.js
 ```
 
 <details>
@@ -203,35 +203,29 @@ let Section_1_2_5 = "Write //, 4 hash characters and the name of section"
 
 </details>
 
-## Process multiple files
+### Process multiple files
 
-You can alternatively write the files you want to keep updated in a simple text list:
+You can alternatively write the files you want to keep updated in a simple glob list:
 
-<details>
- <summary>Click to view `tocfiles.txt`</summary>
+    # ignore-this-file.txt
+    README.md
+    USAGE.md
+    CHANGELOG.md
+    toc/cli.py
+    toc/toc.py
+    # glob expansion
+    tests/test*.py
 
-```python
-# ignore-this-file.txt
-README.md
-USAGE.md
-CHANGELOG.md
-toc/cli.py
-toc/toc.py
-# glob expansion
-tests/test*.py
-```
-</details>
-
-To keep these files up-to-date, you just need to run `toc -l -f tocfiles.txt`:
+To keep these files up-to-date, you just need to run `toc -l -f files.txt`:
 
 ```
-Skipping replacing same toc in file "README.md"
-Updating toc in file "USAGE.md"
-Adding toc to file "CHANGELOG.md"
-Updating toc in file "toc/cli.py"
-Updating toc in file "toc/toc.py"
-Skipping replacing same toc in file "tests/test_cli.py"
-Skipping replacing same toc in file "tests/test_toc.py"
+Skipping unchanged toc in "README.md"
+Updating toc in "USAGE.md"
+Adding toc to "CHANGELOG.md"
+Updating toc in "toc/cli.py"
+Updating toc in "toc/toc.py"
+Skipping unchanged toc in "tests/test_cli.py"
+SSkipping unchanged toc in  "tests/test_toc.py"
 ```
 
 Note that more than one list can be passed in a single command, lines starting with "#" are ignored, and there is support for glob expansion.
@@ -245,10 +239,10 @@ If you feel brave enough, you can run `toc *` over your entire code base, as its
 - skip non-writable files
 - skip files that don't have suitable "section" comments
 - skip files whose toc is already up-to-date
-- only edit files whose toc can be added or updated safely[^3]
+- only update files whose toc can be added or updated safely[^3]
 - preserve shebangs, markdown frontmatters and other declarations of edited files
 
-## Show line numbers
+### Show line numbers
 
 For very long files, it may come in handy to run `toc -n example.js` to see the line number of each section, similar to the page numbers in the table of contents of a book:
 
@@ -270,17 +264,17 @@ For very long files, it may come in handy to run `toc -n example.js` to see the 
 // └───────────────────────────────────────────────────────────────
 ```
 
-## Set a custom comment character
+### Set a custom comment character
 
 But how could `toc` recognize that `//` is the proper comment character for that file?
 Well, thanks to AI[^1] `toc` supports most programming and markup languages, from COBOL to Carbon.
 In case it doesn't work as expected, you can force the behavior by running `toc -c "//" example.xyz`.
 
-## Set a custom file extension
+### Set a custom file extension
 
 You can also force toc to consider an arbitrary file extension by running `toc -e "html" new-file-format.html6`.
 
-## Read from stdin
+### Read from stdin
 
 `toc` can read stdin by using `-` as an argument.
 You may want to set an extension as well: `curl -s https://github.com/AlphaJack/toc | toc -e html -`
@@ -312,7 +306,7 @@ Result:
 -->
 ```
 
-## Redirect output to another file
+### Redirect output to another file
 
 For testing purposes, you can run `toc -o output.py input.py` to choose a different output file.
 
@@ -320,7 +314,7 @@ Note that this option does nothing if the toc in "input.py" is already up-to-dat
 
 The `-o` flag is incompatible with the `-l` one.
 
-## Other commands
+### Other commands
 
 You can run `toc -h` for usage info and `toc -v` to read the current version
 
@@ -367,9 +361,6 @@ For Markdown files, just organize your sections with one or more `#`:
 
 For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/examples/example.beancount) files, it's the same for Markdown, but you use `*` instead:
 
-<details>
- <summary>Click to view `example.beancount`</summary>
-
 ```ini
 * Options
 
@@ -383,14 +374,9 @@ For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/exa
  Expenses:Groceries
 ```
 
-</details>
-
 #### Perl
 
 For Perl files, use the default [Pod](https://perldoc.perl.org/perlpod) heading style:
-
-<details>
- <summary>Click to view `example.ml`</summary>
 
 ```pod
 =pod
@@ -406,9 +392,6 @@ Text
 =cut
 ```
 
-</details>
-
-
 ### Wrap around comments needed
 
 These languages do not support single line comments, and thus every comment should be wrapped by a multi line comment separator
@@ -416,9 +399,6 @@ These languages do not support single line comments, and thus every comment shou
 #### CSS
 
 For CSS files, you have to wrap your `//` comments between `/*` and `*/`:
-
-<details>
- <summary>Click to view `example.css`</summary>
 
 ```css
 /*
@@ -431,22 +411,14 @@ For CSS files, you have to wrap your `//` comments between `/*` and `*/`:
 // ################################ Element selectors
 */
 
- body {
-  background-color: blue;
- }
+body {background-color: blue;}
 
 } /* end Landscape touchscreen */
-
 ```
-
-</details>
 
 #### OCaml
 
 For OCaml files, you have to wrap your `*` comments between `(*` and `*)`:
-
-<details>
- <summary>Click to view `example.ml`</summary>
 
 ```ocaml
 (*
@@ -456,14 +428,20 @@ For OCaml files, you have to wrap your `*` comments between `(*` and `*)`:
 let () = print_endline "Hello, World!"
 ```
 
-</details>
 
 
-### Compatibility with third-party editors
+### Integration with third-party editors
 
 #### Vim and Emacs
 
-If you place your Vim Modeline / Emacs mode as the first line, the toc will be appended after
+If you place your Vim Modeline / Emacs mode as the first line, the toc will be appended after:
+
+```c
+// vim: noai:ts=4:sw=4
+#include <stdlib.h>
+
+void main() { exit(0);}
+```
 
 
 #### RStudio
@@ -471,11 +449,8 @@ If you place your Vim Modeline / Emacs mode as the first line, the toc will be a
 If you are using RStudio, you may want to end your comments with at least 4 `-`, `=` or `#`.
 This marks the comment as a foldable sections:
 
-<details>
- <summary>Click to view `example.R`</summary>
-
 ```r
-# ################################################################ Foldable section 1 ----
+# ################################################################ Foldable section 1 ####
 
 print("Collapse me!")
 
@@ -483,15 +458,7 @@ print("Collapse me!")
 
 print("Collapse me!")
 
-# ################################ Foldable section 3 ====
-
-print("Collapse me!")
 ```
-
-</details>
-
-
-
 
 
 [^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
