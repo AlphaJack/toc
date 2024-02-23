@@ -16,10 +16,11 @@
 // │  │  └── Other commands
 // │  └──┐Exceptional file types
 // │     ├──┐Native support
+// │     │  ├── AsciiDoc
+// │     │  ├── Beancount
 // │     │  ├── HTML
 // │     │  ├── Man pages
 // │     │  ├── Markdown
-// │     │  ├── Beancount
 // │     │  └── Perl
 // │     ├──┐Wrap around comments needed
 // │     │  ├── CSS
@@ -323,6 +324,46 @@ You can run `toc -h` for usage info and `toc -v` to read the current version
 
 For these file types, you don't need to write comments, as `toc` can leverage the language syntax to build the table of contents
 
+#### AsciiDoc
+
+For [AsciiDoc](https://raw.githubusercontent.com/apple/pkl/main/CONTRIBUTING.adoc) files, just organize your sections with one or more `=`:
+
+```adoc
+= Document Title (Level 0)
+
+== Level 1 Section Title
+
+= Level 0 Section Title (Part)
+
+== Level 1 Section Title
+
+=== Level 2 Section Title
+
+==== Level 3 Section Title
+
+===== Level 4 Section Title
+
+====== Level 5 Section Title
+
+```
+
+#### Beancount
+
+For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/examples/example.beancount) files, just organize your sections with one or more `*`:
+
+```ini
+* Options
+
+; comment
+
+* Transactions
+** FY2020
+
+2020-04-20 * "Food"
+ Assets:Bank                                          -20.00 EUR
+ Expenses:Groceries
+```
+
 #### HTML
 
 For HTML files, just use regular headings tags such as `<h1>`, `<h2>` and so on:
@@ -356,23 +397,6 @@ For Markdown files, just organize your sections with one or more `#`:
     # Title
        
     ## Section
-
-#### Beancount
-
-For [Beancount](https://raw.githubusercontent.com/beancount/beancount/master/examples/example.beancount) files, it's the same for Markdown, but you use `*` instead:
-
-```ini
-* Options
-
-; comment
-
-* Transactions
-** FY2020
-
-2020-04-20 * "Food"
- Assets:Bank                                          -20.00 EUR
- Expenses:Groceries
-```
 
 #### Perl
 
