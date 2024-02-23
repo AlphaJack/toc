@@ -1,44 +1,22 @@
-<!--
-// ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of CHANGELOG.md                                      │
-// ├───────────────────────────────────────────────────────────────┘
-// │
-// ├──┐Changelog - toc
-// │  ├──┐[2.4.0] - 2024-02-07
-// │  │  ├── Added
-// │  │  ├── Changed
-// │  │  ├── Documentation
-// │  │  ├── Performance
-// │  │  └── Testing
-// │  ├──┐[2.3.0] - 2024-02-02
-// │  │  ├── Added
-// │  │  ├── Documentation
-// │  │  ├── Fixed
-// │  │  ├── Performance
-// │  │  └── Testing
-// │  ├──┐[2.2.0] - 2024-01-29
-// │  │  ├── Added
-// │  │  ├── Documentation
-// │  │  ├── Fixed
-// │  │  └── Testing
-// │  ├──┐[2.1.0] - 2024-01-22
-// │  │  ├── Added
-// │  │  └── Documentation
-// │  ├── [2.0.0] - 2024-01-21
-// │  └── [1.0.0] - 2023-11-03
-// │
-// └───────────────────────────────────────────────────────────────
--->
-
 # Changelog - toc
+
+## [2.5.0] - 2024-02-23
+### Added
+
+- Native reStructuredText support
+- Native AsciiDoc support
+
+### Testing
+
+- Added AsciiDoc and reStructuredText tests
 
 ## [2.4.0] - 2024-02-07
 ### Added
 
 - Native man pages support
 - Line numbers to HTML toc
-- Stdin support with `-` argument
-- Set an arbitrary extension with `-e`, useful for stdin
+- Stdin support with "-" argument
+- Set an arbitrary extension with "-e", useful for stdin
 - Native HTML support
 
 ### Changed

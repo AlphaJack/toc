@@ -22,6 +22,7 @@
 # │     │  └──┐BODY
 # │     │     ├── ASCIIDOC, BEANCOUNT AND MARKDOWN
 # │     │     ├── HTML
+# │     │     ├── RESTRUCTUREDTEXT
 # │     │     ├── MAN PAGES
 # │     │     ├── PERL
 # │     │     ├── GENERIC
@@ -54,6 +55,7 @@ class Toc:
         self.innerTocTitle = None
         self.innerTocEnd = None
         self.pattern = None
+        # n=2**(7−l), l=7−math.log(n,2)
         self.levels = {
             64: 1,
             32: 2,
@@ -81,10 +83,6 @@ class Toc:
             # https://www.gnu.org/software/groff/manual/, https://manpages.bsd.lv/mdoc.html
             case "1" | "1m" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "n":
                 self.character = '.\\"'
-            case "ml" | "mli":
-                self.character = "*"
-            case "vb" | "vba" | "vbs":
-                self.character = "'"
             case "apl":
                 self.character = "⍝"
             # https://www.gavilan.edu/csis/languages/comments.html#_Toc53710123
@@ -93,13 +91,19 @@ class Toc:
             # https://stackoverflow.com/a/17665688
             case "cbl" | "cob":
                 self.character = "      *>"
-            case "f" | "for":
-                self.character = "C"
             # https://github.com/textmate/fortran.tmbundle/issues/10#issuecomment-22660333
             case "f90" | "f95" | "f03" | "f08" | "f15" | "f18":
                 self.character = "!"
+            case "f" | "for":
+                self.character = "C"
             case "j":
                 self.character = "NB."
+            case "ml" | "mli":
+                self.character = "*"
+            case "rst":
+                self.character = ".."
+            case "vb" | "vba" | "vbs":
+                self.character = "'"
             # jl mojo pl pm ps1 py r rb sh, yml, and anything else
             case _:
                 self.character = "#"
@@ -346,6 +350,8 @@ class Toc:
                 _newtoc = self._process_man(_lines)
             case "pl" | "pm" | "pod":
                 _newtoc = self._process_perl(_lines)
+            case "rst":
+                _newtoc = self._process_restructuredtext(_data)
             case _:
                 _newtoc = self._process_generic(_lines)
         _tocBody = self._prettify_connectors(_newtoc)
@@ -403,6 +409,38 @@ class Toc:
                 # return the character number, not the line number
                 _untilCurrentMatch = _match.start(0)
                 # to calculate the line number, let's count the number of "\n" up to the match start, and add 1 to the result
+                n = n + data.count("\n", _fromLastMatch, _untilCurrentMatch)
+                _heading_text = _heading_text + " " + str(n)
+                # update with the position of the current match
+                _fromLastMatch = _untilCurrentMatch
+            _newtoc.append(self._add_heading(_heading_level, _heading_text))
+        return _newtoc
+
+# #### RESTRUCTUREDTEXT
+
+    def _process_restructuredtext(self, data):
+        _newtoc = []
+        # match the line above a streak of "#" (chapters), "*" (sections), etc., avoiding '"""' heredocs (min 4)
+        _pattern = re.compile(r'(?:[#\*=\-\^~]{2,}|[\"]{4,}|\n)[ \t]*(?!\.\.)(.+)\n[ \t]*([#\*=\-\^~]{2,}|[\"]{4,})\n', re.MULTILINE)
+        _fromLastMatch = 0
+        n = 1
+        # https://devguide.python.org/documentation/markup/#sections
+        _levels = {
+            '#': 1,
+            '*': 2,
+            '=': 3,
+            '-': 4,
+            '~': 5,
+            '^': 5,
+            '"': 6
+        }
+        for _match in _pattern.finditer(data):
+            _heading_text = _match.group(1)
+            _symbol = _match.group(2)[:1]
+            _heading_level = _levels[_symbol]
+            if self.lineNumbers:
+                # start counting from _heading_text, not optional overline
+                _untilCurrentMatch = _match.start(1)
                 n = n + data.count("\n", _fromLastMatch, _untilCurrentMatch)
                 _heading_text = _heading_text + " " + str(n)
                 # update with the position of the current match

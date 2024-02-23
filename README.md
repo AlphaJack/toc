@@ -66,7 +66,7 @@ If you are using Arch or Manjaro Linux, you can install [toc](https://aur.archli
 
 You should now be able to run `toc -h` to display a list of parameter you can use.
 
-See [USAGE.md](./USAGE.md) for step-by-step explanations of the different features, and languages that don't need comments (e.g. Markdown) or needs special attention (e.g. CSS)
+See [USAGE.md](./USAGE.md) for step-by-step explanations of different features, and a list of languages supported natively (e.g. Markdown, AsciiDoc, reStructuredText) or that need special attention (e.g. CSS)
 
 See <https://regex101.com/r/ngzZXN/1> for examples of valid and invalid comments.
 

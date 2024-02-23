@@ -21,7 +21,8 @@
 // │     │  ├── HTML
 // │     │  ├── Man pages
 // │     │  ├── Markdown
-// │     │  └── Perl
+// │     │  ├── Perl
+// │     │  └── reStructuredText
 // │     ├──┐Wrap around comments needed
 // │     │  ├── CSS
 // │     │  └── OCaml
@@ -40,7 +41,7 @@ The scenarios below show different features of `toc`
 ### Read the table of contents
 
 Let's say you want to structure your javascript file "example.js".
-Single line comments in this language start with `//`.
+Single-line comments in this language start with `//`.
 You open your file and add these comments where you need them:
 
 ```js
@@ -344,7 +345,6 @@ For [AsciiDoc](https://raw.githubusercontent.com/apple/pkl/main/CONTRIBUTING.ado
 ===== Level 4 Section Title
 
 ====== Level 5 Section Title
-
 ```
 
 #### Beancount
@@ -416,9 +416,27 @@ Text
 =cut
 ```
 
+#### reStructuredText
+
+For [ReStructured Text](https://raw.githubusercontent.com/sphinx-doc/sphinx/master/doc/usage/restructuredtext/basics.rst) files, just use the [conventional heading format](https://devguide.python.org/documentation/markup/#sections):
+
+```rst
+*******
+Chapter
+*******
+
+=======
+Section
+=======
+
+----------
+Subsection
+----------
+```
+
 ### Wrap around comments needed
 
-These languages do not support single line comments, and thus every comment should be wrapped by a multi line comment separator
+These languages do not support single-line comments, and thus every comment should be wrapped by a multi-line comment separator
 
 #### CSS
 
@@ -471,7 +489,7 @@ void main() { exit(0);}
 #### RStudio
 
 If you are using RStudio, you may want to end your comments with at least 4 `-`, `=` or `#`.
-This marks the comment as a foldable sections:
+This marks the comment as a foldable section:
 
 ```r
 # ################################################################ Foldable section 1 ####
@@ -486,5 +504,5 @@ print("Collapse me!")
 
 
 [^1]: No, not really, it's just a match-case statement using the file extension, defaulting to "#"
-[^2]: Not even, it's just a bunch of if-else and try-excepts statement that may prevent catastrophic damage
-[^3]: The outdated toc to be replaced is defined as the the first match of a non-greedy regex
+[^2]: Not even, it's just a bunch of if-else and try-excepts statements that may prevent catastrophic damage
+[^3]: The outdated toc to be replaced is defined as the first match of a non-greedy regex
