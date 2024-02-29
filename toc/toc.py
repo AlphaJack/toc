@@ -72,7 +72,7 @@ class Toc:
     def set_character(self):
         # automatically select the comment type from its extension, if not already set
         match self.extension:
-            case "ad" | "adoc" | "asc" | "asciidoc" | "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "kt" | "md" | "mdx" | "qmd" | "rmd" | "pas" | "php" | "pp" | "proto" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
+            case "ad" | "adoc" | "asc" | "asciidoc" | "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "jsx" | "kt" | "md" | "mdx" | "qmd" | "rmd" | "pas" | "php" | "pp" | "proto" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
                 self.character = "//"
             case "ahk" | "asm" | "beancount" | "cl" | "clj" | "cljs" | "cljc" | "edn" | "fasl" | "ini" | "lisp" | "lsp" | "rkt" | "scm" | "ss":
                 self.character = ";"
@@ -98,6 +98,8 @@ class Toc:
                 self.character = "C"
             case "j":
                 self.character = "NB."
+            case "mmd" | "mermaid":
+                self.character = "%%"
             case "ml" | "mli":
                 self.character = "*"
             case "rst":
@@ -409,7 +411,7 @@ class Toc:
                 # return the character number, not the line number
                 _untilCurrentMatch = _match.start(0)
                 # to calculate the line number, let's count the number of "\n" up to the match start, and add 1 to the result
-                n = n + data.count("\n", _fromLastMatch, _untilCurrentMatch)
+                n += data.count("\n", _fromLastMatch, _untilCurrentMatch)
                 _heading_text = _heading_text + " " + str(n)
                 # update with the position of the current match
                 _fromLastMatch = _untilCurrentMatch
@@ -441,7 +443,7 @@ class Toc:
             if self.lineNumbers:
                 # start counting from _heading_text, not optional overline
                 _untilCurrentMatch = _match.start(1)
-                n = n + data.count("\n", _fromLastMatch, _untilCurrentMatch)
+                n += data.count("\n", _fromLastMatch, _untilCurrentMatch)
                 _heading_text = _heading_text + " " + str(n)
                 # update with the position of the current match
                 _fromLastMatch = _untilCurrentMatch
