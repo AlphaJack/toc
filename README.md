@@ -7,7 +7,7 @@
 // │  ├── What is it?
 // │  ├── Why should I use it?
 // │  ├── How does it work?
-// │  ├── How can I use it?
+// │  ├── How can I install it?
 // │  ├── How can I contribute?
 // │  └── What has changed from previous versions?
 // │
@@ -27,35 +27,35 @@
 
 ## What is it?
 
-`toc` is a command line utility that generates the table of contents of a file from a special kind of comments.
+`toc` is a [CLI](https://en.wikipedia.org/wiki/Command-line_interface) utility to generates [Table of Contents](https://en.wikipedia.org/wiki/Table_of_contents) of text files.
+It aims to be the [`tree`](https://en.wikipedia.org/wiki/Tree_%28command%29) for the contents of a file, instead of a directory.
 
-Think it as a [`tree`](https://en.wikipedia.org/wiki/Tree_%28command%29) for the contents of a file, instead of a directory.
+`toc` comes with native support for Markdown, AsciiDoc, reStructuredText, HTML and many more.
+It can support any language through a special kind of comments.[^1]
 
 ## Why should I use it?
 
 Few reasons that you may consider:
 
-- it can make your files understandable in seconds, even if you haven't touched them for a while
-- you can jump directly to the section you need to edit, because you know where it's located
-- it makes you reflect about the structure of your file, making it more logical
-- for software developers, it makes your code base more readable to others
+- it can make your files and code base understandable in seconds, to you and others
+- you can jump directly to the section you need to edit, because you see where it's located
+- it makes you reflect about the structure of your file
 
 ## How does it work?
 
-First, you have to write the comments representing the different sections of a file.
-Second, you run `toc` on that file to turn those comments into a table of contents.
+For markup languages such as Markdown, AsciiDoc, reStructuredText and HTML, no changes are needed.
+For other languages (e.g. C), write some comments representing the different sections of a file.[^1]
+After this, run `toc` on that file to turn those comments into a table of contents.
 
 Comments are structured in this way:
 
 ![Syntax of comments used to generate table of contents](https://github.com/AlphaJack/toc/raw/master/images/syntax.webp)
 
-By running `toc file.c`, you will read the table of contents of that file
+By running `toc file.c`, you will read the table of contents of that file:
 
 ![Toc generated from syntax comments](https://github.com/AlphaJack/toc/raw/master/images/simple.webp)
 
-This table of contents of that file can also be embedded in the original file with `toc -f file.c`
-
-## How can I use it?
+## How can I install it?
 
 First, you need [Python](https://www.python.org/downloads/) installed in your system.
 
@@ -71,9 +71,8 @@ You should now be able to run `toc -h` to display a list of parameter you can us
 
 <!--[USAGE.md](./USAGE.md)-->
 
-See [USAGE.md](https://github.com/AlphaJack/toc/blob/master/USAGE.md) for step-by-step explanations of different features, and a list of languages supported natively (e.g. Markdown, AsciiDoc, reStructuredText) or that need special attention (e.g. CSS)
-
-See <https://regex101.com/r/ngzZXN/1> for examples of valid and invalid comments.
+See [USAGE.md](https://github.com/AlphaJack/toc/blob/master/USAGE.md) for step-by-step explanations of different features,
+and a list of languages supported natively or that need special attention (e.g. CSS)
 
 ## How can I contribute?
 
@@ -83,3 +82,4 @@ See [CONTRIBUTING.md](https://github.com/AlphaJack/toc/blob/master/CONTRIBUTING.
 
 See [CHANGELOG.md](https://github.com/AlphaJack/toc/blob/master/CHANGELOG.md)
 
+[^1]: For examples of valid and invalid comments, see <https://regex101.com/r/ngzZXN/2>
