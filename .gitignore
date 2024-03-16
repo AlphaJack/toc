@@ -9,4 +9,4 @@ dist
 tests/output/*
 htmlcov
 venv
-.kate-swp
+*.kate-swp
