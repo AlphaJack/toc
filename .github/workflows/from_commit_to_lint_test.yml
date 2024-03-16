@@ -49,10 +49,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install flake8
-          python -m pip install mypy
-          #python -m pip install -e .
-          python -m pip install .
+          python -m pip install flake8 mypy
+          python -m pip install -e .
 
       - name: Lint with flake8
         run: |
@@ -61,9 +59,9 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=420 --statistics
           # type check
-          mypy toc/toc.py
-          #mypy toc/cli.py
+          mypy toc/cli.py
 
       - name: Test with unittest
         run: |
+          # test suite
           python -m unittest
