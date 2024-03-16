@@ -9,6 +9,7 @@
 // │  │  ├── Embed the table of contents in the original file
 // │  │  ├── Process multiple files
 // │  │  ├── Show line numbers
+// │  │  ├── Limit depth
 // │  │  ├── Set a custom comment character
 // │  │  ├── Set a custom file extension
 // │  │  ├── Read from stdin
@@ -262,6 +263,23 @@ For very long files, it may come in handy to run `toc -n example.js` to see the 
 // │     └──┐Nested section 43
 // │        └──┐Nested section 47
 // │           └── Nested section 51
+// │
+// └───────────────────────────────────────────────────────────────
+```
+
+### Limit depth
+
+If you want to only see headings up to a certain level, you can limit them with `toc -d 2 example.js`:
+
+```js
+// ┌───────────────────────────────────────────────────────────────┐
+// │ Contents of example.js                                        │
+// ├───────────────────────────────────────────────────────────────┘
+// │
+// ├──┐Main section
+// │  ├── New section
+// │  ├── New section
+// │  └── Nested section
 // │
 // └───────────────────────────────────────────────────────────────
 ```

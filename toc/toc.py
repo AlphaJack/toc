@@ -49,6 +49,7 @@ class Toc:
         self.extension = self.inputFile.split(".")[-1].lower() if "." in self.inputFile else ""
         self.lineNumbers = lineNumbers
         self.character = character
+        self.depth = 0
         self.err: str | None = None
         self.updated = False
         self.innerTocBegin: str | None = None
@@ -362,12 +363,16 @@ class Toc:
         return _tocBody
 
     def _add_heading(self, level: int, text: str) -> str:
-        if level == 1:
-            _replacement = self.character + " ├── " + text
+        # limit output to a max level
+        if self.depth != 0 and level > self.depth:
+            _replacement = ""
         else:
-            # character, left toc margin, indentation of 3 spaces per heading level, connectors, text
-            _replacement = self.character + " │  " + "   " * (level - 2) + "└── " + text
-        # print(_replacement)
+            if level == 1:
+                _replacement = self.character + " ├── " + text
+            else:
+                # character, left toc margin, indentation of 3 spaces per heading level, connectors, text
+                _replacement = self.character + " │  " + "   " * (level - 2) + "└── " + text
+            # print(_replacement)
         return _replacement
 
 # #### ASCIIDOC, BEANCOUNT AND MARKDOWN
@@ -518,59 +523,64 @@ class Toc:
         # "┐" is added to every heading except the last one. to calculate its position
         # "├" replaces "└" for every siblings at the same level, except the last one
         # "│" is added to connect lower siblings to upper siblings with children. to avoid adding it multiple times at every line, we need to reverse the list
+        print(newtoc)
         if newtoc:
-            # process the list in reverse order, as we
-            _headings = newtoc[::-1]
+            # process the list in reverse order, removing empty elements
+            _headings = list(filter(None, newtoc[::-1]))
+            print(_headings, file=sys.stderr)
             # for each line store: int_position_of_match: bool_parent_has_not_yet_been_encountered
             # int_position_of_match is 3x the heading level
             _flags: dict[int, bool] = {}
             _pattern = re.compile(r"[└├]")
             for index, heading in enumerate(_headings):
                 # "├": first level, "└": other levels
-                # print("Original line:  ", heading)
-                # save the position of the match
-                i = re.search(_pattern, heading).start()  # type: ignore[union-attr]
-                # for the first heading of each level do nothing, as it is the last sibling of that level
-                # if current level is true, it means this heading is not the last sibling, therefore add "├" to connect to siblings below
-                if _flags.get(i, False):
-                    heading = heading[:i] + "├" + heading[i + 1:]
-                    # print('Line after "├": ', heading)
-                    # print('Dict after "├": ', dict(sorted(_flags.items())))
-                # print(" ")
-                # flag the current level to True, to indicate we are still operating at this level
-                _flags[i] = True
-                # set position of the child level
-                c = i + 3
-                # if child level is True, it means that now we are operating at a level with children,
-                # therefore add "┐" to connect to the first child
-                # this c flag is set to True with _flags[i] = True if we descended again to the child level, e.g. BEGIN H1 H2 H3 H2 H3 END
-                # print(_flags)
-                if _flags.get(c, False):
-                    heading = heading[:c] + "┐" + heading[c + 1:]
-                    # print('Line after "┐": ', heading)
-                # print('Dict after "┐": ', dict(sorted(_flags.items())))
-                # print(" ")
-                # set eventual child level to False, because if it was True we just connected to the first child with "┐",
-                # and if it was False a previous sibling connected to the first child
-                _flags[c] = False
-                # the following code section is not triggered for simple "stairs" table of contents, e.g. BEGIN H1, H2, H3, H3, H4 END
-                # however, if we have a higher heading level after a lower one, e.g. BEGIN H1, H2, H3, H2 END
-                # in the example above, the second H2 should be vertically connected with "│" to the first H2
-                # this affects H3, which should also be added a "│", and it also affects the first H2, which should replace its "└" with "├"
-                # for H3, this is done now, for the first H2, it is done via flag the next iteration of 'for index, heading in enumerate(_lines)'
-                # in BEGIN H1, H2, H3, H4, H2 END, H3 is modified once, but H4 is modified with two parallel "│"
-                # start from the parent level, then go back right-to-left at intervals of 3, until position 4
-                for p in range(i - 3, 4, -3):
-                    # if a parent level (15) is True, it means that we should vertically connect that level with "│"
-                    if _flags.get(p, False):
-                        # print("Adding '│' to ", heading)
-                        heading = heading[:p] + "│" + heading[p + 1:]
-                        # print('Line after "│": ', heading)
-                        # print('Dict after "│": ', dict(sorted(_flags.items())))
-                # print(" ")
-                # replace the original heading with the modified one
-                _headings[index] = heading
-                # reverse before returning
+                print(f"Original line: '{heading}'")
+                # skip empty lines (due to --level)
+                match_heading = re.search(_pattern, heading)
+                if match_heading is not None:
+                    # save the position of the match
+                    i = match_heading.start()
+                    # for the first heading of each level do nothing, as it is the last sibling of that level
+                    # if current level is true, it means this heading is not the last sibling, therefore add "├" to connect to siblings below
+                    if _flags.get(i, False):
+                        heading = heading[:i] + "├" + heading[i + 1:]
+                        # print('Line after "├": ', heading)
+                        # print('Dict after "├": ', dict(sorted(_flags.items())))
+                    # print(" ")
+                    # flag the current level to True, to indicate we are still operating at this level
+                    _flags[i] = True
+                    # set position of the child level
+                    c = i + 3
+                    # if child level is True, it means that now we are operating at a level with children,
+                    # therefore add "┐" to connect to the first child
+                    # this c flag is set to True with _flags[i] = True if we descended again to the child level, e.g. BEGIN H1 H2 H3 H2 H3 END
+                    # print(_flags)
+                    if _flags.get(c, False):
+                        heading = heading[:c] + "┐" + heading[c + 1:]
+                        # print('Line after "┐": ', heading)
+                    # print('Dict after "┐": ', dict(sorted(_flags.items())))
+                    # print(" ")
+                    # set eventual child level to False, because if it was True we just connected to the first child with "┐",
+                    # and if it was False a previous sibling connected to the first child
+                    _flags[c] = False
+                    # the following code section is not triggered for simple "stairs" table of contents, e.g. BEGIN H1, H2, H3, H3, H4 END
+                    # however, if we have a higher heading level after a lower one, e.g. BEGIN H1, H2, H3, H2 END
+                    # in the example above, the second H2 should be vertically connected with "│" to the first H2
+                    # this affects H3, which should also be added a "│", and it also affects the first H2, which should replace its "└" with "├"
+                    # for H3, this is done now, for the first H2, it is done via flag the next iteration of 'for index, heading in enumerate(_lines)'
+                    # in BEGIN H1, H2, H3, H4, H2 END, H3 is modified once, but H4 is modified with two parallel "│"
+                    # start from the parent level, then go back right-to-left at intervals of 3, until position 4
+                    for p in range(i - 3, 4, -3):
+                        # if a parent level (15) is True, it means that we should vertically connect that level with "│"
+                        if _flags.get(p, False):
+                            # print("Adding '│' to ", heading)
+                            heading = heading[:p] + "│" + heading[p + 1:]
+                            # print('Line after "│": ', heading)
+                            # print('Dict after "│": ', dict(sorted(_flags.items())))
+                    # print(" ")
+                    # replace the original heading with the modified one
+                    _headings[index] = heading
+                    # reverse before returning
             _tocBody = _headings[::-1]
         else:
             _tocBody = []

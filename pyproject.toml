@@ -18,15 +18,11 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["toc"]
 
-[tool.setuptools.dynamic]
-# read version from __init__.py
-version = {attr = "toc.__version__"}
-
 # ################################################################ Project
 
 [project]
 name = "tableofcontents"
-dynamic = ["version"]
+version = "2.6.0"
 authors = [
   { name="AlphaJack" },
 ]
@@ -44,7 +40,9 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3"
 ]
-dependencies = []
+dependencies = [
+    "importlib_metadata"
+]
 
 [project.scripts]
 toc = "toc.cli:main"

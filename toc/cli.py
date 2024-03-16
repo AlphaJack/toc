@@ -29,20 +29,22 @@ import sys
 # glob expansion
 import glob
 
-# toc (installed system vs local development)
+# version
+from importlib_metadata import version
+
+# toc library (installed system vs local development)
 try:
     from toc.toc import Toc
-    from toc.__version__ import __version__
 except ImportError:
     from toc import Toc
-    from __version__ import __version__
 
 # ################################################################ FUNCTIONS
 # ################################ ARGUMENTS
 
 
 def parse_args():
-    # read user-provided comment type
+    # read user-provided arguments
+    # "{character}" is needed otherwise toc would recognize it as a valid comment
     character = "#"
     example_usage = f"""
 example comments:
@@ -61,12 +63,13 @@ example comments:
     group = parser.add_mutually_exclusive_group()
     parser.add_argument("files", nargs="*", help="files or lists of files to process. use '-' to read from stdin")
     parser.add_argument("-c", action="store", dest="character", type=str, help="set an arbitrary comment character (e.g. //)")
+    group.add_argument("-d", "--depth", type=int, help="maximum toc depth")
     parser.add_argument("-e", action="store", dest="extension", type=str, help="interpret input as a file with this extension (e.g. html)")
     parser.add_argument("-f", "--to-file", action="store_true", help="add or update toc in the original file")
     group.add_argument("-l", "--from-list", action="store_true", help="consider positional arguments as lists of files")
     parser.add_argument("-n", "--line-numbers", action="store_true", help="print line numbers in toc")
     group.add_argument("-o", action="store", dest="output_file", type=str, help="print output to an arbitrary file")
-    parser.add_argument("-v", "--version", action='version', version="%(prog)s " + __version__, help="show the current version and exit")
+    parser.add_argument("-v", "--version", action='version', version="%(prog)s " + version("tableofcontents"), help="show the current version and exit")
     args = parser.parse_args()
     return args
 
@@ -102,6 +105,7 @@ def process_file(inputFile: str, args):
     # set comment character and line numbers
     t.extension = args.extension if args.extension else t.extension
     t.character = args.character if args.character else t.set_character()
+    t.depth = args.depth if args.depth else t.depth
     t.lineNumbers = args.line_numbers if args.line_numbers else False
     t.outputFile = args.output_file if args.output_file else None
     # print output
