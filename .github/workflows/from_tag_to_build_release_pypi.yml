@@ -69,7 +69,7 @@ jobs:
 
       - name: Store version
         id: version
-        run: ./toc/cli.py --version
+        run: python -m toc.cli --version
 
       - name: Store partial changelog for release notes
         id: changelog

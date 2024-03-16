@@ -18,7 +18,8 @@
 // │     │  ├── Function-level time
 // │     │  ├── Line-level time
 // │     │  └── Memory allocation
-// │     └── Launching without installing
+// │     ├── Launching without installing
+// │     └── Release
 // │
 // └───────────────────────────────────────────────────────────────
 -->
@@ -208,13 +209,13 @@ python -m toc.cli -f "toc/toc.py"
 
 Steps for a new release:
 
-1. Run `toc -lf .tocfiles`
-2. Update version in "pyproject.toml"
-3. Save changes with `git commit`
-4. Add a temporary tag with `git tag v2.6.0`
-5. Update the changelog with `git-cliff -c pyproject.toml > CHANGELOG.md`
+1. Update version in "pyproject.toml"
+2. Save changes with `git commit`
+3. Add a temporary tag with `git tag v2.6.0` and rewrite the tag name
+4. Update the changelog with `git-cliff -c pyproject.toml > CHANGELOG.md`
+5. Run `toc -lf .tocfiles`
 6. Remove tag with `git tag --delete v2.6.0`
 7. Add changelog changes with `git add CHANGELOG.md && git commit -m "minor: updated CHANGELOG.md"`
-8. Add a final tag with `git tag v2.6.0`
+8. Move tag to the new commit with `git tag -fa  v2.6.0`
 9. Upload the new commits and tags with `git push --follow-tags`
 10. Update [AUR](https://aur.archlinux.org/packages/toc) version once the new [PyPI](https://pypi.org/project/tableofcontents/) version is online
