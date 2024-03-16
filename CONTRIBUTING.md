@@ -7,6 +7,7 @@
 // │  ├── Suggestions
 // │  └──┐Contributions
 // │     └──┐Tools
+// │        ├── Type checking
 // │        ├── Linting
 // │        ├── Test coverage
 // │        ├──┐Benchmarks
@@ -36,7 +37,17 @@ If you would like to submit a [pull request](https://github.com/AlphaJack/toc/pu
 
 ### Tools
 
-Here is a list of tools that you can use
+Here is a list of tools that you can use to improve code quality.
+
+#### Type checking
+
+Assigning a specific type (str, list, etc.) to variables and function outputs makes the code less prone to errors.
+Type checking ensures variables consistency and that functions are passed the expected type of input.
+
+```bash
+pip install mypy
+mypy "toc/"
+```
 
 #### Linting
 
@@ -52,7 +63,7 @@ flake8 "tests/" --exit-zero --max-line-length=420 --statistics
 
 #### Test coverage
 
-A high test coverage checks more code against unexpected behaviors, i.e. bugs
+A high test coverage checks more code against unexpected behaviors, i.e. bugs.
 
 ```bash
 pip install coverage
@@ -62,7 +73,7 @@ firefox "htmlcov/index.html"
 ```
 #### Benchmarks
 
-Running the code against a heavy workload amplifies the effect of unoptimized sections in profiling operations.
+Running the code against a heavy workload amplifies the effect of inefficient sections in profiling operations.
 
 ##### Large files
 

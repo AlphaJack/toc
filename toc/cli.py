@@ -20,7 +20,6 @@
 # accept arguments
 import argparse
 
-
 # heredoc in help epilog
 from argparse import RawDescriptionHelpFormatter
 
@@ -72,7 +71,7 @@ example comments:
     return args
 
 
-def get_files(args):
+def get_files(args) -> list:
     # consider all files as lists
     if args.from_list:
         files = []
@@ -97,7 +96,7 @@ def get_files(args):
 # ################################ PROCESS FILE
 
 
-def process_file(inputFile, args):
+def process_file(inputFile: str, args):
     # initialize instance
     t = Toc(inputFile)
     # set comment character and line numbers
@@ -114,7 +113,7 @@ def process_file(inputFile, args):
 # ################################ MAIN
 
 
-def main():
+def main() -> None:
     # parse arguments
     # print(sys.argv)
     args = parse_args()
