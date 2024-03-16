@@ -4,6 +4,11 @@
 // ├───────────────────────────────────────────────────────────────┘
 // │
 // ├──┐Changelog - toc
+// │  ├──┐[2.6.0] - 2024-03-16
+// │  │  ├── Added
+// │  │  ├── Changed
+// │  │  ├── Documentation
+// │  │  └── Testing
 // │  ├──┐[2.5.0] - 2024-02-23
 // │  │  ├── Added
 // │  │  └── Testing
@@ -34,6 +39,26 @@
 -->
 
 # Changelog - toc
+
+## [2.6.0] - 2024-03-16
+### Added
+
+- Set maximum toc depth with `--depth int`
+- Using importlib.metadata.version() for `--version`
+- Static type checking
+
+### Changed
+
+- Support for comments that start after spaces or tabs
+- To run without being installed, `python -m toc.cli` must be used instead of `./toc/cli.py`
+
+### Documentation
+
+- Highlighted support for markup languages
+
+### Testing
+
+- Added tests for files formatted by python-black
 
 ## [2.5.0] - 2024-02-23
 ### Added
