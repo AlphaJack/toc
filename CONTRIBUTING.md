@@ -216,6 +216,8 @@ Steps for a new release:
 5. Run `toc -lf .tocfiles`
 6. Remove tag with `git tag --delete v2.6.0`
 7. Add changelog changes with `git add CHANGELOG.md && git commit -m "minor: updated CHANGELOG.md"`
-8. Move tag to the new commit with `git tag -fa  v2.6.0`
+8. Move tag to the new commit with `git tag -fa v2.6.0`
 9. Upload the new commits and tags with `git push --follow-tags`
 10. Update [AUR](https://aur.archlinux.org/packages/toc) version once the new [PyPI](https://pypi.org/project/tableofcontents/) version is online
+
+In case a tag has been pushed to GitHub, but the release failed, run `git push --delete origin v2.6.0` and repeat the steps above

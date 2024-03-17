@@ -75,7 +75,7 @@ class Toc:
     def set_character(self) -> str:
         # automatically select the comment type from its extension, if not already set
         match self.extension:
-            case "ad" | "adoc" | "asc" | "asciidoc" | "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "jsx" | "kt" | "md" | "mdx" | "qmd" | "rmd" | "pas" | "php" | "pp" | "proto" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
+            case "ad" | "adoc" | "asc" | "asciidoc" | "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "cu" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "jsx" | "kt" | "md" | "mdx" | "qmd" | "rmd" | "pas" | "php" | "pp" | "proto" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
                 self.character = "//"
             case "ahk" | "asm" | "beancount" | "cl" | "clj" | "cljs" | "cljc" | "edn" | "fasl" | "ini" | "lisp" | "lsp" | "rkt" | "scm" | "ss":
                 self.character = ";"
@@ -442,11 +442,14 @@ class Toc:
         return _newtoc
 
     # #### HTML
-
-    # every time an html page is parsed with regex, a software engineer dies
     def _process_html(self, data: str) -> list:
         _newtoc = []
-        _pattern = re.compile(r"<h(\d).*?>(?:<.*?>)?(.*?)</.*?h\d", re.MULTILINE)
+        # every time an html page is parsed with regex, a software engineer dies
+        # _pattern = re.compile(r"<h(\d).*?>(?:<.*?>)?(.*?)</.*?h\d", re.MULTILINE)
+        # https://learnbyexample.github.io/python-regex-possessive-quantifier/
+        # _pattern = re.compile(r"<h(\d)(?>.*?)>?(?:\s)*(?:<.*?>)?(?:\s)*(.*?)(?:\s)*</(.*?)h\d>", re.MULTILINE)
+        # _pattern = re.compile(r"<h(\d).*?>.*?>?(?:\s)*(?:<.*?>)?(?:\s)*(.*?)(?:\s)*</.*?h\d>", re.DOTALL)
+        _pattern = re.compile(r"<[hH](\d).*?>.*?>?(?:\s)*(?:<.*?>)?(?:\s)*(.*?)(?:\s)*</[hH]\d>", re.DOTALL)
         # _matches = _pattern.finditer(data)
         # print(sum(1 for _ in _matches))
         # for _match in _matches:
@@ -462,7 +465,8 @@ class Toc:
             _heading_level = int(_match.group(1))
             # in case there are fancy tags or other elements inside the title, we remove them
             # blood for the blood god
-            _heading_text = re.sub(r"<.*?>", "", _match.group(2).strip())
+            _heading_text = re.sub(r"<.*?>", "", _match.group(2)).strip()
+            # print(f"Heading text: '{_heading_text}'")
             if self.lineNumbers:
                 # return the character number, not the line number
                 _untilCurrentMatch = _match.start(0)
