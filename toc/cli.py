@@ -36,7 +36,7 @@ from importlib_metadata import version
 from toc.toc import Toc
 
 # needed for cprofile, pprofile and memray
-#from toc import Toc
+# from toc import Toc
 
 # ################################################################ FUNCTIONS
 # ################################ ARGUMENTS

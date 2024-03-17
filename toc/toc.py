@@ -449,7 +449,10 @@ class Toc:
         # https://learnbyexample.github.io/python-regex-possessive-quantifier/
         # _pattern = re.compile(r"<h(\d)(?>.*?)>?(?:\s)*(?:<.*?>)?(?:\s)*(.*?)(?:\s)*</(.*?)h\d>", re.MULTILINE)
         # _pattern = re.compile(r"<h(\d).*?>.*?>?(?:\s)*(?:<.*?>)?(?:\s)*(.*?)(?:\s)*</.*?h\d>", re.DOTALL)
-        _pattern = re.compile(r"<[hH](\d).*?>.*?>?(?:\s)*(?:<.*?>)?(?:\s)*(.*?)(?:\s)*</[hH]\d>", re.DOTALL)
+        _pattern = re.compile(
+            r"<[hH](\d).*?>.*?>?(?:\s)*(?:<.*?>)?(?:\s)*(.*?)(?:\s)*</[hH]\d>",
+            re.DOTALL,
+        )
         # _matches = _pattern.finditer(data)
         # print(sum(1 for _ in _matches))
         # for _match in _matches:

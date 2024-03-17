@@ -23,14 +23,14 @@ import shutil
 # current directory
 from pathlib import Path
 
+# fake files
+from unittest.mock import patch
+
 # load local module rather than system installed version
 import sys
 
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, project_root)
-
-# fake files
-from unittest.mock import patch, mock_open
 
 # module to test
 from toc.toc import Toc
