@@ -29,7 +29,7 @@ from unittest.mock import patch
 # load local module rather than system installed version
 import sys
 
-project_root = Path(__file__).resolve().parent.parent
+project_root = str(Path(__file__).resolve().parent.parent)
 sys.path.insert(0, project_root)
 
 # module to test
@@ -46,7 +46,7 @@ class TestTocMethods(unittest.TestCase):
             ("file.c", "c"),
             ("file.ini", "ini"),
             (".", ""),
-            ("./../", "/"),
+            ("./../", ""),
             ("file.unknown", "unknown"),
             ("file.", ""),
         ]
@@ -54,7 +54,7 @@ class TestTocMethods(unittest.TestCase):
             with self.subTest(
                 input_file=input_file, expected_extension=expected_extension
             ):
-                t = Toc(input_file)
+                t = Toc(Path(input_file))
                 actual_extension = t.extension
                 self.assertEqual(
                     actual_extension,
@@ -76,7 +76,7 @@ class TestTocMethods(unittest.TestCase):
             with self.subTest(
                 input_file=input_file, expected_character=expected_character
             ):
-                t = Toc(input_file)
+                t = Toc(Path(input_file))
                 actual_character = t.set_character()
                 self.assertEqual(
                     actual_character,
@@ -92,7 +92,8 @@ class TestTocMethods(unittest.TestCase):
             "": ([], []),
         }
         for extension, (expected_prefix, expected_suffix) in test_cases.items():
-            t = Toc("mock.txt")
+            input_file = Path("mock.txt")
+            t = Toc(input_file)
             t.extension = extension
             actual_prefix, actual_suffix = t._toc_prefix_suffix()
             comparison = (
@@ -107,7 +108,8 @@ class TestTocMethods(unittest.TestCase):
                 )
 
     def test_process_generic_1(self):
-        t = Toc("mock.txt")
+        input_file = Path("mock.txt")
+        t = Toc(input_file)
         lines = [
             "# ################################################################ Heading 1"
         ]
@@ -116,7 +118,8 @@ class TestTocMethods(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_process_generic_2n(self):
-        t = Toc("mock.beancount")
+        input_file = Path("mock.beancount")
+        t = Toc(input_file)
         t.set_character()
         lines = ["*** Transactions"]
         expected = ["; │     └── Transactions"]
@@ -124,7 +127,8 @@ class TestTocMethods(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_prettify_connectors(self):
-        t = Toc("mock.txt")
+        input_file = Path("mock.txt")
+        t = Toc(input_file)
         input_list = [
             "# ├── MODULES",
             "# ├── CLASS",
@@ -179,7 +183,8 @@ class TestTocMethods(unittest.TestCase):
             "builtins.open",
             side_effect=UnicodeDecodeError("utf-8", b"", 1, 2, "mock reason"),
         ):
-            t = Toc("mock.txt")
+            input_file = Path("mock.txt")
+            t = Toc(input_file)
             data = t._read_file()
             self.assertEqual(data, "")
             self.assertEqual(t.err, "binary")

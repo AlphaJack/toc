@@ -27,10 +27,13 @@ from argparse import RawDescriptionHelpFormatter
 import sys
 
 # glob expansion
-import glob
+# import glob
 
 # version
 from importlib_metadata import version
+
+# robust file handling
+from pathlib import Path
 
 # toc library
 from toc.toc import Toc
@@ -65,6 +68,7 @@ example comments:
     parser.add_argument(
         "files",
         nargs="*",
+        type=Path,
         help="files or lists of files to process. use '-' to read from stdin",
     )
     parser.add_argument(
@@ -74,7 +78,7 @@ example comments:
         type=str,
         help="set an arbitrary comment character (e.g. //)",
     )
-    group.add_argument("-d", "--depth", type=int, help="maximum toc depth")
+    parser.add_argument("-d", "--depth", type=int, help="maximum toc depth")
     parser.add_argument(
         "-e",
         action="store",
@@ -101,7 +105,7 @@ example comments:
         "-o",
         action="store",
         dest="output_file",
-        type=str,
+        type=Path,
         help="print output to an arbitrary file",
     )
     parser.add_argument(
@@ -115,23 +119,26 @@ example comments:
     return args
 
 
-def get_files(args) -> list:
+def get_files(args) -> list[Path]:
     # consider all files as lists
     if args.from_list:
         files = []
         for fileList in args.files:
-            try:
+            # try:
+            if True:
                 with open(fileList, "r") as list_content:
                     for line in list_content.read().splitlines():
-                        if not line.startswith("#"):
+                        if not line.startswith("#") and line != "":
                             # glob expansion
                             files += [
+                                # globMatch for globMatch in glob.glob(line, recursive=True)
                                 globMatch
-                                for globMatch in glob.glob(line, recursive=True)
+                                for globMatch in Path.cwd().glob(line)
+                                if globMatch.exists() and globMatch.is_file()
                             ]
             # cannot open that list
-            except BaseException:
-                print(f'Skipping list "{fileList}"', file=sys.stderr)
+            # except BaseException:
+            #    print(f'Skipping list "{fileList}"', file=sys.stderr)
     # only consider the first file
     elif args.output_file:
         files = [args.files[0]]
@@ -144,7 +151,7 @@ def get_files(args) -> list:
 # ################################ PROCESS FILE
 
 
-def process_file(inputFile: str, args):
+def process_file(inputFile: Path, args):
     # initialize instance
     t = Toc(inputFile)
     # set comment character and line numbers

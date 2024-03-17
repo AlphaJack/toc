@@ -40,33 +40,29 @@ import re
 # stderr
 import sys
 
+# files
+from pathlib import Path
+
 
 # ################################################################ CLASSES
 
 
 class Toc:
-    def __init__(
-        self,
-        inputFile: str = "",
-        outputFile: str | None = None,
-        lineNumbers: bool = False,
-        character: str = "#",
-    ):
-        self.inputFile = "stdin" if str(inputFile) == "-" else str(inputFile)
-        self.outputFile = outputFile
-        self.extension = (
-            self.inputFile.split(".")[-1].lower() if "." in self.inputFile else ""
-        )
-        self.lineNumbers = lineNumbers
-        self.character = character
-        self.depth = 0
+    def __init__(self, inputFile: Path):
+        print(f"inputFile: {inputFile}", file=sys.stderr)
+        self.inputFile: Path = inputFile
+        self.outputFile: Path | None = None
+        self.extension: str = self.inputFile.suffix.lower().replace(".", "")
+        self.lineNumbers: bool = False
+        self.updated: bool = False
+        self.character: str = "#"
+        self.depth: int = 0
         self.err: str | None = None
-        self.updated = False
         self.innerTocBegin: str | None = None
         self.innerTocTitle: str | None = None
         self.innerTocEnd: str | None = None
         # n=2**(7−l), l=7−math.log(n,2)
-        self.levels = {64: 1, 32: 2, 16: 3, 8: 4, 4: 5, 2: 6}
+        self.levels: dict[int, int] = {64: 1, 32: 2, 16: 3, 8: 4, 4: 5, 2: 6}
 
     # ################################ PUBLIC METHODS
 
@@ -131,11 +127,11 @@ class Toc:
 
     # ######## FILE
 
-    def to_file(self, output: str | None = None) -> None:
+    def to_file(self, output: Path | None = None) -> None:
         # if file has been specified, print there instead of the original file (useful for testing)
         if self.outputFile is None:
             self.outputFile = output if output else self.inputFile
-        if self.inputFile == "stdin":
+        if self.inputFile == Path("-"):
             print(
                 "Cannot write to stdin", file=sys.stderr
             ) if self.err is None else None
@@ -342,8 +338,8 @@ class Toc:
 
     def _toc_header(self) -> list:
         # begin the toc with the file name, truncating it if necessary
-        _filename = self.inputFile.split("/")[-1]
-        if self.inputFile == "stdin":
+        _filename = self.inputFile.name
+        if self.inputFile == Path("-"):
             _truncated_filename = (
                 f"stdin.{self.extension}" if self.extension != "" else "stdin"
             )
@@ -653,7 +649,7 @@ class Toc:
         # display alert for common errors
         _data = ""
         try:
-            if self.inputFile == "stdin":
+            if self.inputFile == Path("-"):
                 _data = sys.stdin.read()
             else:
                 with open(self.inputFile, "r") as f:
