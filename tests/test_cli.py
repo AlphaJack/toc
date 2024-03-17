@@ -124,6 +124,47 @@ class TestCli(unittest.TestCase):
                     print("output: '" + output.getvalue() + "'")
                     self.assertIn("Contents of stdin.html", output.getvalue())
 
+    def test_depth(self):
+        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-e", "html", "-d", "1", "-"]
+        stdin_content = """
+<html>
+<html>
+<h1>Title</h1>
+<h2>Subtitle</h2>
+</html>
+"""
+        with patch("sys.stdin", StringIO(stdin_content)):
+            with patch.object(sys, "argv", test_args):
+                output = StringIO()
+                with redirect_stdout(output):
+                    main()
+                    print("output: '" + output.getvalue() + "'")
+                    self.assertNotIn("Subtitle", output.getvalue())
+
+    def test_line_numbers_html(self):
+        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-e", "html", "-n", "-"]
+        stdin_content = "<h1>Title</h1>"
+        with patch("sys.stdin", StringIO(stdin_content)):
+            with patch.object(sys, "argv", test_args):
+                output = StringIO()
+                with redirect_stdout(output):
+                    main()
+                    print("output: '" + output.getvalue() + "'")
+                    self.assertIn("Title 1", output.getvalue())
+
+    def test_line_numbers_generic(self):
+        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-e", "tex", "-n", "-"]
+        stdin_content = """
+% ################################################################ Preamble
+"""
+        with patch("sys.stdin", StringIO(stdin_content)):
+            with patch.object(sys, "argv", test_args):
+                output = StringIO()
+                with redirect_stdout(output):
+                    main()
+                    print("output: '" + output.getvalue() + "'")
+                    self.assertIn("Preamble 2", output.getvalue())
+
     def test_output(self):
         test_args = [
             f"{self.p / 'toc' / 'cli.py'}",
