@@ -32,8 +32,8 @@ from pathlib import Path
 # load local module rather than system installed version
 import sys
 
-project_root = str(Path(__file__).resolve().parent.parent)
-sys.path.insert(0, project_root)
+project_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(project_root))
 
 # module to test
 from toc.cli import main
