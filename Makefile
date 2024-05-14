@@ -11,7 +11,7 @@ release:
 	mypy .
 	black .
 	git status
-	sed -i pyproject.toml -e "s|version = .*|version = \"$(tag)\"|"
+	grep -q $(tag) pyproject.toml || sed -i pyproject.toml -e "s|version = .*|version = \"$(tag)\"|"
 	echo "Abort now if there are files that needs to be committed"
 	sleep 10
 	git tag v$(tag)

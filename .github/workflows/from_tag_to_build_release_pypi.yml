@@ -13,9 +13,12 @@
 
 name: Create GitHub release and deploy to PyPI from a new tag
 
-# requirements: PyPI API token
+# requirements:
+# - GitHub has an environment called "release"
+# - PyPI has a trusted publisher set (no need for secret token)
 
-# debug: 
+
+# debug:
 #   git push --delete origin v1.1.0 && git tag --delete v1.1.0
 #   git -a && git commit --amend
 #   git push --force
@@ -153,6 +156,9 @@ jobs:
     name: Deploy to PyPI
     needs: build
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
     steps:
 
       - name: Access package
@@ -163,6 +169,3 @@ jobs:
 
       - name: Deploy package
         uses: pypa/gh-action-pypi-publish@81e9d935c883d0b210363ab89cf05f3894778450 # 1.8.14
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}

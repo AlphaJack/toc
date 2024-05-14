@@ -49,7 +49,6 @@ from pathlib import Path
 
 class Toc:
     def __init__(self, inputFile: Path):
-        print(f"inputFile: {inputFile}", file=sys.stderr)
         self.inputFile: Path = inputFile
         self.outputFile: Path | None = None
         self.extension: str = self.inputFile.suffix.lower().replace(".", "")
