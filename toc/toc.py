@@ -71,9 +71,67 @@ class Toc:
     def set_character(self) -> str:
         # automatically select the comment type from its extension, if not already set
         match self.extension:
-            case "ad" | "adoc" | "asc" | "asciidoc" | "c" | "carbon" | "cc" | "coffee" | "cpp" | "cs" | "css" | "cu" | "d" | "dart" | "go" | "h" | "hpp" | "htm" | "html" | "hxx" | "java" | "js" | "jsx" | "kt" | "md" | "mdx" | "qmd" | "rmd" | "pas" | "php" | "pp" | "proto" | "qs" | "rs" | "scala" | "sc" | "swift" | "ts" | "typ" | "xml" | "zig":
+            case (
+                "ad"
+                | "adoc"
+                | "asc"
+                | "asciidoc"
+                | "c"
+                | "carbon"
+                | "cc"
+                | "coffee"
+                | "cpp"
+                | "cs"
+                | "css"
+                | "cu"
+                | "d"
+                | "dart"
+                | "go"
+                | "h"
+                | "hpp"
+                | "htm"
+                | "html"
+                | "hxx"
+                | "java"
+                | "js"
+                | "jsx"
+                | "kt"
+                | "md"
+                | "mdx"
+                | "qmd"
+                | "rmd"
+                | "pas"
+                | "php"
+                | "pp"
+                | "proto"
+                | "qs"
+                | "rs"
+                | "scala"
+                | "sc"
+                | "swift"
+                | "ts"
+                | "typ"
+                | "xml"
+                | "zig"
+            ):
                 self.character = "//"
-            case "ahk" | "asm" | "beancount" | "cl" | "clj" | "cljs" | "cljc" | "edn" | "fasl" | "ini" | "lisp" | "lsp" | "rkt" | "scm" | "ss":
+            case (
+                "ahk"
+                | "asm"
+                | "beancount"
+                | "cl"
+                | "clj"
+                | "cljs"
+                | "cljc"
+                | "edn"
+                | "fasl"
+                | "ini"
+                | "lisp"
+                | "lsp"
+                | "rkt"
+                | "scm"
+                | "ss"
+            ):
                 self.character = ";"
             case "bib" | "cls" | "erl" | "hrl" | "mat" | "sty" | "tex":
                 self.character = "%"
@@ -117,10 +175,14 @@ class Toc:
         _, _outerToc = self._generate_toc()
         if _outerToc == "":
             # skip error if we already set self.err
-            print(
-                f'Could not generate a "{self.character}" toc from "{self.inputFile}"',
-                file=sys.stderr,
-            ) if self.err is None else None
+            (
+                print(
+                    f'Could not generate a "{self.character}" toc from "{self.inputFile}"',
+                    file=sys.stderr,
+                )
+                if self.err is None
+                else None
+            )
             self.err = "empty"
         else:
             print(_outerToc)
@@ -132,9 +194,11 @@ class Toc:
         if self.outputFile is None:
             self.outputFile = output if output else self.inputFile
         if self.inputFile == Path("-"):
-            print(
-                "Cannot write to stdin", file=sys.stderr
-            ) if self.err is None else None
+            (
+                print("Cannot write to stdin", file=sys.stderr)
+                if self.err is None
+                else None
+            )
             self.err = "stdin"
         else:
             # run twice because updating the toc with self.lineNumbers == True may shift everything down
@@ -149,19 +213,23 @@ class Toc:
         _innerToc, _outerToc = self._generate_toc()
         # do not write an empty file
         if _outerToc == "":
-            print(
-                f'Could not generate a "{self.character}" toc from "{self.inputFile}"',
-                file=sys.stderr,
-            ) if self.err is None else None
+            (
+                print(
+                    f'Could not generate a "{self.character}" toc from "{self.inputFile}"',
+                    file=sys.stderr,
+                )
+                if self.err is None
+                else None
+            )
             self.err = "empty"
         else:
             # if the file does not contain a toc, add it, otherwise update it
             # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
             # match also file name, results in a second toc if file is renamed
-            #self.pattern = re.compile(
+            # self.pattern = re.compile(
             #    rf"{self.innerTocBegin}\n{self.innerTocTitle}(.*?){self.innerTocEnd}",
             #    re.DOTALL,
-            #)
+            # )
             # does not match file name, replacing toc even if file gets renamed
             self.pattern = re.compile(
                 rf"{self.innerTocBegin}\n{self.character} │ Contents of (.*?){self.innerTocEnd}",
@@ -182,15 +250,24 @@ class Toc:
                 with open(self.outputFile, "w") as f:
                     f.write(data)
             except PermissionError:
-                print(
-                    f'Skipping write-protected "{self.outputFile}"', file=sys.stderr
-                ) if self.err is None else None
+                (
+                    print(
+                        f'Skipping write-protected "{self.outputFile}"', file=sys.stderr
+                    )
+                    if self.err is None
+                    else None
+                )
                 self.err = "write"
                 self.updated = True
             except BaseException:
-                print(
-                    f'Unknown error while writing "{self.outputFile}"', file=sys.stderr
-                ) if self.err is None else None
+                (
+                    print(
+                        f'Unknown error while writing "{self.outputFile}"',
+                        file=sys.stderr,
+                    )
+                    if self.err is None
+                    else None
+                )
                 self.err = "unknownw"
                 self.updated = True
         elif not self.updated:
@@ -224,16 +301,29 @@ class Toc:
                     _firstline_toml = re.search(r"^\+\+\+$", _firstLine)
                     _firstline_json = re.search(r"^{$", _firstLine)
                     if _firstline_yaml is not None:
-                        _frontmatters_yaml = re.search(r"^---\n.*?\n---", _data, re.DOTALL)
-                        _frontmatter = _frontmatters_yaml.group(0)
+                        _frontmatters_yaml = re.search(
+                            r"^---\n.*?\n---", _data, re.DOTALL
+                        )
+                        if _frontmatters_yaml is not None:
+                            _frontmatter = _frontmatters_yaml.group(0)
+                        else:
+                            _frontmatter = None
                     elif _firstline_toml is not None:
                         _frontmatters_toml = re.search(
                             r"^\+\+\+\n.*?\n\+\+\+", _data, re.DOTALL
                         )
-                        _frontmatter = _frontmatters_toml.group(0)
+                        if _frontmatters_toml is not None:
+                            _frontmatter = _frontmatters_toml.group(0)
+                        else:
+                            _frontmatter = None
                     elif _firstline_json is not None:
-                        _frontmatters_json = re.search(r"^\{\n.*?\n\}", _data, re.DOTALL)
-                        _frontmatter = _frontmatters_json.group(0)
+                        _frontmatters_json = re.search(
+                            r"^\{\n.*?\n\}", _data, re.DOTALL
+                        )
+                        if _frontmatters_json is not None:
+                            _frontmatter = _frontmatters_json.group(0)
+                        else:
+                            _frontmatter = None
                     else:
                         _frontmatter = None
                     if _frontmatter is not None:
@@ -253,9 +343,12 @@ class Toc:
                     else:
                         if _firstline_docstring is not None:
                             _docstrings = re.search(r'^"""\n.*?\n"""', _data, re.DOTALL)
-                            _docstring = _docstrings.group(0)
-                            _firstLine = _docstring
-                            _firstFewLines = _firstLine + "\n\n" + outerToc
+                            if _docstrings is not None:
+                                _docstring = _docstrings.group(0)
+                                _firstLine = _docstring
+                                _firstFewLines = _firstLine + "\n\n" + outerToc
+                            else:
+                                _firstFewLines = outerToc + "\n\n" + _firstLine
                         else:
                             _firstFewLines = outerToc + "\n\n" + _firstLine
                 case _:
@@ -678,33 +771,45 @@ class Toc:
                 with open(self.inputFile, "r") as f:
                     _data = f.read()
         except FileNotFoundError:
-            print(
-                f'Skipping non-existing "{self.inputFile}"', file=sys.stderr
-            ) if self.err is None else None
+            (
+                print(f'Skipping non-existing "{self.inputFile}"', file=sys.stderr)
+                if self.err is None
+                else None
+            )
             _data = ""
             self.err = "notfound"
         except PermissionError:
-            print(
-                f'Skipping read-protected "{self.inputFile}"', file=sys.stderr
-            ) if self.err is None else None
+            (
+                print(f'Skipping read-protected "{self.inputFile}"', file=sys.stderr)
+                if self.err is None
+                else None
+            )
             _data = ""
             self.err = "read"
         except IsADirectoryError:
-            print(
-                f'Skipping directory "{self.inputFile}"', file=sys.stderr
-            ) if self.err is None else None
+            (
+                print(f'Skipping directory "{self.inputFile}"', file=sys.stderr)
+                if self.err is None
+                else None
+            )
             _data = ""
             self.err = "directory"
         except UnicodeDecodeError:
-            print(
-                f'Skipping binary "{self.inputFile}"', file=sys.stderr
-            ) if self.err is None else None
+            (
+                print(f'Skipping binary "{self.inputFile}"', file=sys.stderr)
+                if self.err is None
+                else None
+            )
             _data = ""
             self.err = "binary"
         except BaseException:
-            print(
-                f'Unknown error while reading "{self.inputFile}"', file=sys.stderr
-            ) if self.err is None else None
+            (
+                print(
+                    f'Unknown error while reading "{self.inputFile}"', file=sys.stderr
+                )
+                if self.err is None
+                else None
+            )
             _data = ""
             self.err = "unknownr"
         finally:

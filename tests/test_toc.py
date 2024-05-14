@@ -223,9 +223,10 @@ class TestTocFiles(unittest.TestCase):
             t.lineNumbers = True if file.name == "latex_linenumbers.tex" else False
             t.to_file(output_file)
             if output_file.is_file() and reference_file.is_file():
-                with open(output_file, "r") as output, open(
-                    reference_file, "r"
-                ) as reference:
+                with (
+                    open(output_file, "r") as output,
+                    open(reference_file, "r") as reference,
+                ):
                     output_content, reference_content = output.read(), reference.read()
                     comparison = True if output_content == reference_content else False
                     with self.subTest(comparison=comparison):

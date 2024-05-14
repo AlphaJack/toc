@@ -1,11 +1,18 @@
 # usage:
 #	make release tag=v2.7.0
 
+#In case a tag has been pushed to GitHub, but the release failed, run `
+#	git tag --delete v2.7.0
+#	git push --delete origin v2.7.0
+# and repeat the steps below
+
 release:
+	python -m pytest
+	mypy .
+	black .
 	git status
 	echo "Abort now if there are files that needs to be committed"
-	sleep 5
-	git log
+	sleep 10
 	git tag $(tag)
 	# enter "v2.7.0"
 	git-cliff -c pyproject.toml > CHANGELOG.md
