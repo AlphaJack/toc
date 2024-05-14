@@ -157,8 +157,14 @@ class Toc:
         else:
             # if the file does not contain a toc, add it, otherwise update it
             # re.MULTILINE: https://docs.python.org/3/library/re.html#re.M
+            # match also file name, results in a second toc if file is renamed
+            #self.pattern = re.compile(
+            #    rf"{self.innerTocBegin}\n{self.innerTocTitle}(.*?){self.innerTocEnd}",
+            #    re.DOTALL,
+            #)
+            # does not match file name, replacing toc even if file gets renamed
             self.pattern = re.compile(
-                rf"{self.innerTocBegin}\n{self.innerTocTitle}(.*?){self.innerTocEnd}",
+                rf"{self.innerTocBegin}\n{self.character} │ Contents of (.*?){self.innerTocEnd}",
                 re.DOTALL,
             )
             # print(self.pattern)
@@ -214,27 +220,44 @@ class Toc:
             match self.extension:
                 case "md":
                     # multi line yaml, toml, js frontmatter for markdown
-                    _frontmatter_yaml = re.search(r"^---\n.*?\n---", _data, re.DOTALL)
-                    _frontmatter_toml = re.search(
-                        r"^\+\+\+\n.*?\n\+\+\+", _data, re.DOTALL
-                    )
-                    _frontmatter_json = re.search(r"^\{\n.*?\n\}", _data, re.DOTALL)
-                    if _frontmatter_yaml is not None:
-                        _frontmatter = _frontmatter_yaml.group(0)
-                    elif _frontmatter_toml is not None:
-                        _frontmatter = _frontmatter_toml.group(0)
-                    elif _frontmatter_json is not None:
-                        _frontmatter = _frontmatter_json.group(0)
+                    _firstline_yaml = re.search(r"^---$", _firstLine)
+                    _firstline_toml = re.search(r"^\+\+\+$", _firstLine)
+                    _firstline_json = re.search(r"^{$", _firstLine)
+                    if _firstline_yaml is not None:
+                        _frontmatters_yaml = re.search(r"^---\n.*?\n---", _data, re.DOTALL)
+                        _frontmatter = _frontmatters_yaml.group(0)
+                    elif _firstline_toml is not None:
+                        _frontmatters_toml = re.search(
+                            r"^\+\+\+\n.*?\n\+\+\+", _data, re.DOTALL
+                        )
+                        _frontmatter = _frontmatters_toml.group(0)
+                    elif _firstline_json is not None:
+                        _frontmatters_json = re.search(r"^\{\n.*?\n\}", _data, re.DOTALL)
+                        _frontmatter = _frontmatters_json.group(0)
                     else:
                         _frontmatter = None
-                    _firstLine = _frontmatter if _frontmatter else _firstLine
-                    _firstFewLines = (
-                        _firstLine + "\n\n" + outerToc
-                        if _frontmatter
-                        else outerToc + "\n\n" + _firstLine
-                    )
+                    if _frontmatter is not None:
+                        _firstLine = _frontmatter
+                        _firstFewLines = _firstLine + "\n\n" + outerToc
+                    else:
+                        _firstFewLines = outerToc + "\n\n" + _firstLine
                     # print(_frontmatter)
                     # print(_firstFewLines)
+                case "py":
+                    # need to match shebang also here since we have a switch/case by extension
+                    _firstline_shebang = re.search(r"^#\!", _firstLine)
+                    # module docstring for python
+                    _firstline_docstring = re.search(r'^"""$', _firstLine)
+                    if _firstline_shebang is not None:
+                        _firstFewLines = _firstLine + "\n\n" + outerToc
+                    else:
+                        if _firstline_docstring is not None:
+                            _docstrings = re.search(r'^"""\n.*?\n"""', _data, re.DOTALL)
+                            _docstring = _docstrings.group(0)
+                            _firstLine = _docstring
+                            _firstFewLines = _firstLine + "\n\n" + outerToc
+                        else:
+                            _firstFewLines = outerToc + "\n\n" + _firstLine
                 case _:
                     # single line shebang, xml, html, vim, emacs, perl pod
                     if (
