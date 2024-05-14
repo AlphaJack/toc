@@ -1,6 +1,6 @@
 # Changelog - toc
 
-## Work in progress
+## [2.7.0] - 2024-05-14
 ### Added
 
 - Placing TOC after module docstring in python files
