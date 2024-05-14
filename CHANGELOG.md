@@ -1,44 +1,23 @@
-<!--
-// ┌───────────────────────────────────────────────────────────────┐
-// │ Contents of CHANGELOG.md                                      │
-// ├───────────────────────────────────────────────────────────────┘
-// │
-// ├──┐Changelog - toc
-// │  ├──┐[2.6.0] - 2024-03-16
-// │  │  ├── Added
-// │  │  ├── Changed
-// │  │  ├── Documentation
-// │  │  └── Testing
-// │  ├──┐[2.5.0] - 2024-02-23
-// │  │  ├── Added
-// │  │  └── Testing
-// │  ├──┐[2.4.0] - 2024-02-07
-// │  │  ├── Added
-// │  │  ├── Changed
-// │  │  ├── Documentation
-// │  │  ├── Performance
-// │  │  └── Testing
-// │  ├──┐[2.3.0] - 2024-02-02
-// │  │  ├── Added
-// │  │  ├── Documentation
-// │  │  ├── Fixed
-// │  │  ├── Performance
-// │  │  └── Testing
-// │  ├──┐[2.2.0] - 2024-01-29
-// │  │  ├── Added
-// │  │  ├── Documentation
-// │  │  ├── Fixed
-// │  │  └── Testing
-// │  ├──┐[2.1.0] - 2024-01-22
-// │  │  ├── Added
-// │  │  └── Documentation
-// │  ├── [2.0.0] - 2024-01-21
-// │  └── [1.0.0] - 2023-11-03
-// │
-// └───────────────────────────────────────────────────────────────
--->
-
 # Changelog - toc
+
+## [2.7.0] - 2024-05-14
+### Added
+
+- Placing TOC after module docstring in python files
+
+### Changed
+
+- Updating file name in TOC in case file has been renamed
+- Using pathlib to reference files
+
+### Fixed
+
+- HTML headings that span across multiple lines are now matched
+
+### Testing
+
+- Added man and line numbers tests
+- Added HTML tests
 
 ## [2.6.0] - 2024-03-16
 ### Added
@@ -96,6 +75,11 @@
 - Added stdin and ouput tests for cli script
 - Added cli testing
 
+### Various
+
+- Optimized range in _prettify_connectors()
+- Using single source for package version
+
 ## [2.3.0] - 2024-02-02
 ### Added
 
@@ -127,6 +111,10 @@
 - Added complex toc nexting
 - Added more unit tests to toc.py
 - Added check for missing reference file
+
+### Various
+
+- Avoiding replacing builtins like "file", "input" and "list"
 
 ## [2.2.0] - 2024-01-29
 ### Added
@@ -160,6 +148,10 @@
 - Not considering files under tests/output
 - Added input and reference test for testing
 
+### Various
+
+- Using re.search() instead of re.match(), removed re flags= where not needed
+
 ## [2.1.0] - 2024-01-22
 ### Added
 
@@ -171,6 +163,10 @@
 
 - Added changelog
 - Added changelog support through git-cliff
+
+### Various
+
+- Set PyPI project name to tableofcontents, added GH workflow for PyPI
 
 ## [2.0.0] - 2024-01-21
 
