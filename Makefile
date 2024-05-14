@@ -1,5 +1,5 @@
 # usage:
-#	make release tag=v2.7.0
+#	make release tag=2.7.0
 
 #In case a tag has been pushed to GitHub, but the release failed, run `
 #	git tag --delete v2.7.0
@@ -11,13 +11,14 @@ release:
 	mypy .
 	black .
 	git status
+	sed -i pyproject.toml -e "s|version = .*|version = \"$(tag)\"|"
 	echo "Abort now if there are files that needs to be committed"
 	sleep 10
-	git tag $(tag)
+	git tag v$(tag)
 	# enter "v2.7.0"
 	git-cliff -c pyproject.toml > CHANGELOG.md
 	#toc -lf .tocfiles
-	git tag --delete $(tag)
+	git tag --delete v$(tag)
 	git add CHANGELOG.md && git commit -m "minor: updated CHANGELOG.md"
-	git tag -fa $(tag)
+	git tag -fa v$(tag)
 	git push --follow-tags
