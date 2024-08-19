@@ -1,10 +1,5 @@
 # Changelog - toc
 
-## [2.7.1] - 2024-08-19
-### Fixed
-
-- Docstring matching
-
 ## [2.7.0] - 2024-05-14
 ### Added
 

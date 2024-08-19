@@ -11,14 +11,14 @@ release:
 	mypy .
 	black .
 	git status
-	grep -q $(tag) pyproject.toml || sed -i pyproject.toml -e "s|version = .*|version = \"$(tag)\"|"
+	grep -q $(tag) pyproject.toml || sed -i pyproject.toml -e "s|version = .*|version = \"$(tag)\"|" && git add pyproject.toml
 	echo "Abort now if there are files that needs to be committed"
 	sleep 10
-	git tag v$(tag)
+	git tag v$(tag) -m "v$(tag)"
 	# enter "v2.7.0"
 	git-cliff -c pyproject.toml > CHANGELOG.md
 	#toc -lf .tocfiles
 	git tag --delete v$(tag)
 	git add CHANGELOG.md && git commit -m "minor: updated CHANGELOG.md"
-	git tag -fa v$(tag)
+	git tag -fa v$(tag) -m "v$(tag)"
 	git push --follow-tags
