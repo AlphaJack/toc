@@ -12,7 +12,8 @@ release:
 	black .
 	git status
 	grep -q $(tag) pyproject.toml || sed -i pyproject.toml -e "s|version = .*|version = \"$(tag)\"|" && git add pyproject.toml
-	echo "Abort now if there are files that needs to be committed"
+	git status
+	echo "Abort now if there are files that needs to be committed!"
 	sleep 10
 	git tag v$(tag) -m "v$(tag)"
 	# enter "v2.7.0"
@@ -22,3 +23,4 @@ release:
 	git add CHANGELOG.md && git commit -m "minor: updated CHANGELOG.md"
 	git tag -fa v$(tag) -m "v$(tag)"
 	git push --follow-tags
+	echo "Update the AUR package once done!"
