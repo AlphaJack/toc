@@ -1,6 +1,6 @@
 # Changelog - toc
 
-## [2.7.0] - 2024-05-14
+## [2.7.1] - 2024-08-19
 ### Added
 
 - Placing TOC after module docstring in python files
@@ -12,6 +12,7 @@
 
 ### Fixed
 
+- Docstring matching
 - HTML headings that span across multiple lines are now matched
 
 ### Testing
