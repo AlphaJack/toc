@@ -336,12 +336,12 @@ class Toc:
                     # need to match shebang also here since we have a switch/case by extension
                     _firstline_shebang = re.search(r"^#\!", _firstLine)
                     # module docstring for python
-                    _firstline_docstring = re.search(r'^"""$', _firstLine)
+                    _firstline_docstring = re.search(r'"""', _firstLine)
                     if _firstline_shebang is not None:
                         _firstFewLines = _firstLine + "\n\n" + outerToc
                     else:
                         if _firstline_docstring is not None:
-                            _docstrings = re.search(r'^"""\n.*?\n"""', _data, re.DOTALL)
+                            _docstrings = re.search(r'""".*?"""', _data, re.DOTALL)
                             if _docstrings is not None:
                                 _docstring = _docstrings.group(0)
                                 _firstLine = _docstring
@@ -628,6 +628,7 @@ class Toc:
         for n, line in enumerate(lines):
             _match = _pattern.match(line)
             if _match:
+                _heading_level = 1
                 match _match.group(1):
                     case "TH" | "Th":
                         _heading_level = 1
