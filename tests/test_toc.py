@@ -220,7 +220,7 @@ class TestTocFiles(unittest.TestCase):
             # print("reference_file: " + str(reference_file))
             t = Toc(input_file)
             t.set_character()
-            t.lineNumbers = True if file.name == "latex_linenumbers.tex" else False
+            t.lineNumbers = True if file.name == "latex_line_numbers.tex" else False
             t.to_file(output_file)
             if output_file.is_file() and reference_file.is_file():
                 with (
