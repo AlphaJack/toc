@@ -8,5 +8,5 @@ dist
 **.prof
 tests/output/*
 htmlcov
-venv
+.venv
 *.kate-swp
