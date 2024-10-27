@@ -1,5 +1,10 @@
 # Changelog - toc
 
+## [2.7.2] - 2024-10-27
+### Added
+
+- Added magic comment support for LaTeX
+
 ## [2.7.1] - 2024-08-19
 ### Added
 
