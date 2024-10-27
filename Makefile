@@ -31,4 +31,4 @@ tag:
 	git push --follow-tags
 	echo "Update the AUR package once done!"
 
-release: format status tag
+release: format test tag

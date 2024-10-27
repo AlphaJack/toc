@@ -288,7 +288,8 @@ class Toc:
     def _check_directives(self, outerToc: str) -> str:
         # if a frontmatter, shebang or directive is found, append after first line(s)
         _data = self._read_file()
-        _firstLine = _data.splitlines()[0]
+        _lines = _data.splitlines()
+        _firstLine = _lines[0]
         if _firstLine == "":
             # if _firstLine was be empty, re.sub would destroy the original file by inserting an outerToc between every character
             _data = outerToc + "\n" + _data
@@ -350,6 +351,19 @@ class Toc:
                                 _firstFewLines = outerToc + "\n\n" + _firstLine
                         else:
                             _firstFewLines = outerToc + "\n\n" + _firstLine
+                case "bib" | "cls" | "erl" | "hrl" | "mat" | "sty" | "tex":
+                    _firstline_magic_comment = re.search(r"^% \!", _firstLine)
+                    if _firstline_magic_comment is not None:
+                        _magic_comment_lines = []
+                        for _current_line in _data.splitlines():
+                            if _current_line.startswith("% !"):
+                                _magic_comment_lines.append(_current_line)
+                            else:
+                                break
+                        _firstLine = "\n".join(_magic_comment_lines)
+                        _firstFewLines = _firstLine + "\n\n" + outerToc
+                    else:
+                        _firstFewLines = outerToc + "\n\n" + _firstLine
                 case _:
                     # single line shebang, xml, html, vim, emacs, perl pod
                     if (
