@@ -513,7 +513,7 @@ class Toc:
         _data = self._read_file()
         _lines = _data.splitlines()
         match self.extension:
-            case "ad" | "adoc" | "asc" | "asciidoc":
+            case "ad" | "adoc" | "asc" | "asciidoc" | "typ":
                 _newtoc = self._process_increasing(_lines, "=")
             case "beancount":
                 _newtoc = self._process_increasing(_lines, "*")
