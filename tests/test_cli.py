@@ -153,7 +153,7 @@ class TestCli(unittest.TestCase):
                     self.assertIn("Title 1", output.getvalue())
 
     def test_line_numbers_generic(self):
-        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-e", "tex", "-n", "-"]
+        test_args = [f"{self.p / 'toc' / 'cli.py'}", "-e", "cls", "-n", "-"]
         stdin_content = """
 % ################################################################ Preamble
 """

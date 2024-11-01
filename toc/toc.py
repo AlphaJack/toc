@@ -521,6 +521,8 @@ class Toc:
                 _newtoc = self._process_increasing(_lines, "#")
             case "html":
                 _newtoc = self._process_html(_data)
+            case "tex":
+                _newtoc = self._process_latex(_lines)
             case "1" | "1m" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "n":
                 _newtoc = self._process_man(_lines)
             case "pl" | "pm" | "pod":
@@ -604,6 +606,32 @@ class Toc:
                 # update with the position of the current match
                 _fromLastMatch = _untilCurrentMatch
             _newtoc.append(self._add_heading(_heading_level, _heading_text))
+        return _newtoc
+
+    # #### LATEX
+
+    def _process_latex(self, lines: list) -> list:
+        # parse latexc, reusing headings
+        _newtoc = []
+        _pattern = re.compile(
+            r"\\(chapter|(?:sub){0,}section|(?:sub){0,}paragraph){(.*?)}"
+        )
+        for n, line in enumerate(lines):
+            _match = _pattern.match(line)
+            if _match:
+                _heading_levels = {
+                    "chapter": 1,
+                    "section": 2,
+                    "subsection": 3,
+                    "subsubsection": 4,
+                    "paragraph": 5,
+                    "subparagraph": 6,
+                }
+                _heading_level = _heading_levels.get(_match.group(1), 1)
+                _heading_text = (
+                    f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
+                )
+                _newtoc.append(self._add_heading(_heading_level, _heading_text))
         return _newtoc
 
     # #### RESTRUCTUREDTEXT
