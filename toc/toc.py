@@ -616,18 +616,18 @@ class Toc:
         _pattern = re.compile(
             r"\\(chapter|(?:sub){0,}section|(?:sub){0,}paragraph){(.*?)}"
         )
+        _levels = {
+            "chapter": 1,
+            "section": 2,
+            "subsection": 3,
+            "subsubsection": 4,
+            "paragraph": 5,
+            "subparagraph": 6,
+        }
         for n, line in enumerate(lines):
             _match = _pattern.match(line)
             if _match:
-                _heading_levels = {
-                    "chapter": 1,
-                    "section": 2,
-                    "subsection": 3,
-                    "subsubsection": 4,
-                    "paragraph": 5,
-                    "subparagraph": 6,
-                }
-                _heading_level = _heading_levels.get(_match.group(1), 1)
+                _heading_level = _levels.get(_match.group(1), 1)
                 _heading_text = (
                     f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
                 )
@@ -650,7 +650,7 @@ class Toc:
         for _match in _pattern.finditer(data):
             _heading_text = _match.group(1)
             _symbol = _match.group(2)[:1]
-            _heading_level = _levels[_symbol]
+            _heading_level = _levels.get(_symbol, 1)
             if self.lineNumbers:
                 # start counting from _heading_text, not optional overline
                 _untilCurrentMatch = _match.start(1)
@@ -667,17 +667,11 @@ class Toc:
         # parse perl files, reusing headings
         _newtoc = []
         _pattern = re.compile(r'^\.(T[Hh]|S[HhSs]) "?(\w+?(?:\s\w+?)*)"?(\s|$)')
+        _levels = {"TH": 1, "Th": 1, "SH": 2, "Sh": 2, "SS": 3, "Ss": 3}
         for n, line in enumerate(lines):
             _match = _pattern.match(line)
             if _match:
-                _heading_level = 1
-                match _match.group(1):
-                    case "TH" | "Th":
-                        _heading_level = 1
-                    case "SH" | "Sh":
-                        _heading_level = 2
-                    case "SS" | "Ss":
-                        _heading_level = 3
+                _heading_level = _levels.get(_match.group(1), 1)
                 _heading_text = (
                     f"{_match.group(2)} {n+1}" if self.lineNumbers else _match.group(2)
                 )
