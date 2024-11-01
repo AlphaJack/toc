@@ -1,5 +1,15 @@
 # Changelog - toc
 
+## [2.7.3] - 2024-11-01
+### Added
+
+- Added latex support
+- Added typst support
+
+### Performance
+
+- Using dictionaries instead of match case when it makes sense
+
 ## [2.7.2] - 2024-10-27
 ### Added
 
