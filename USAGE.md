@@ -20,10 +20,12 @@
 // │     │  ├── AsciiDoc
 // │     │  ├── Beancount
 // │     │  ├── HTML
+// │     │  ├── LaTeX
 // │     │  ├── Man pages
 // │     │  ├── Markdown
 // │     │  ├── Perl
-// │     │  └── reStructuredText
+// │     │  ├── reStructuredText
+// │     │  └── Typst
 // │     ├──┐Wrap around comments needed
 // │     │  ├── CSS
 // │     │  └── OCaml
@@ -394,6 +396,19 @@ For HTML files, just use regular headings tags such as `<h1>`, `<h2>` and so on:
 </html>
 ```
 
+#### LaTeX
+
+For LaTeX files, just use regular headings, from `chapter` to `subparagraph`:
+
+```latex
+\chapter{My chapter}
+
+\section{First section of the chapter}
+\subsection{First child of the section}
+
+\section{Second section of the chapter}
+```
+
 #### Man pages
 
 For `man` pages such as groff and mandoc, just use regular headings indicators `.\TH`, `.\SH` and `.\Ss`:
@@ -436,7 +451,7 @@ Text
 
 #### reStructuredText
 
-For [ReStructured Text](https://raw.githubusercontent.com/sphinx-doc/sphinx/master/doc/usage/restructuredtext/basics.rst) files, just use the [conventional heading format](https://devguide.python.org/documentation/markup/#sections):
+For [reStructuredText](https://raw.githubusercontent.com/sphinx-doc/sphinx/master/doc/usage/restructuredtext/basics.rst) files, just use the [conventional heading format](https://devguide.python.org/documentation/markup/#sections):
 
 ```rst
 *******
@@ -450,6 +465,19 @@ Section
 ----------
 Subsection
 ----------
+```
+
+#### Typst
+
+For [Typst](https://typst.app/) files, just organize your sections with one or more `=` (like for AsciiDoc):
+
+```typst
+= Introduction
+= Background
+== History
+== State of the Art
+= Analysis
+== Setup
 ```
 
 ### Wrap around comments needed
